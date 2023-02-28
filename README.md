@@ -12,11 +12,16 @@ Quotidianamente un batch legge il tracciato ed individua i messaggi da spedire p
 
 Si prevedono i seguenti moduli:
 
+
 - Rest API: API per gestire le seguenti risorse
   - /files : per il caricamento e consultazione dei file caricati
   - /govio_files : per la consultazione dei file prodotti
-- Job di elaborazione: quotidianamente elabora l'ultimo file caricato e individua nuove notifiche da inviare
-- Job di upload: i tracciati prodotti al punto precedente vengono caricati in GovIO 
+- WebApp Angular: console di gestione con le seguenti funzioni
+  - Sezione tracciati di alimentazione: consente il caricamento del tracciato CSV delle scadenze CIE e visualizzare i tracciati precedenti con la data di upload e l'utente che ha caricato il file.
+  - Sezione notifiche prodotte: consente di visualizzare il tracciato giornaliero delle notifiche prodotte dal sistema con lo stato di spedizione a GovIO
+- Batch di elaborazione quotidiana dei tracciati
+  - Job di schedulazione: processa l'ultimo file caricato e individua nuove notifiche da inviare secondo le cadenze previste (-90/-60/-30/-7/+1)
+- Job di upload: le notifiche sono riversate in un CSV e caricati in GovIO 
 
 ## Note
 
