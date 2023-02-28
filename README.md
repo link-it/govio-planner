@@ -25,7 +25,7 @@ Si prevedono i seguenti moduli:
 
 ## Note
 
-- Si prevede un solo profilo che garantisce i diritti per accedere risorse di cui sopra.
+- E' previsto un profilo utente specifico per l'accesso alle risorse
 - Il GovIO servizi istance id e' un parametro di configurazione fisso per il file upload ed conseguente processamento
 - la cadenza di spedizione e' un dato configurabile
 - Il processamento legge l'ultima versione del CSV e la data dell'ultimo tracciato prodotto (nel proseguo `last`). Per ogni record controlla se da `last` alla scadenza della CIE e' decorsa una delle cadenze configurate e pianifica solo l'ultima.
