@@ -21,13 +21,13 @@ Si prevedono i seguenti moduli:
   - Tracciati notifiche: permette la consultazione dei tracciati giornalieri delle notifiche e lo stato di spedizione a GovIO
 - Batch di elaborazione quotidiana dei tracciati
   - Job di schedulazione: processa l'ultimo file caricato e individua nuove notifiche da inviare secondo le cadenze previste (-90/-60/-30/-7/+1)
-- Job di upload: le notifiche sono riversate in un CSV e caricati in GovIO 
+  - Job di upload: le notifiche sono riversate in un CSV e caricati in GovIO 
 
 ## Note
 
 - E' previsto un profilo utente specifico per l'accesso alle risorse
-- Il GovIO servizi istance id e' un parametro di configurazione fisso per il file upload ed conseguente processamento
-- la cadenza di spedizione e' un dato configurabile
+- Il servizio opera per un Ente ed invia messaggi per un servizio configurato in GovIO 
+- La cadenza di spedizione e' un dato 
 - Il processamento legge l'ultima versione del CSV e la data dell'ultimo tracciato prodotto (nel proseguo `last`). Per ogni record controlla se da `last` alla scadenza della CIE e' decorsa una delle cadenze configurate e pianifica solo l'ultima.
 
 ## Database
