@@ -1,10 +1,10 @@
-# govio-loader-cie
+# govio-planner
 
-Modulo di pianificazione delle notifiche di scadenza della CIE.
+Modulo di pianificazione delle notifiche IO.
 
 ## Funzionamento di base
 
-Il servizio prevede che un cittadino venga notificato della scadenza della propria CIE 90, 60, 30 e 7 giorni prima della scadenza con un messaggio di promemoria ed un giorno dopo con la notifica dell'avvenuta scadenza. L'utente sottomette un tracciato CSV in un formato proprietario contenente, tra le altre, le informazioni necessarie alla spedizione di messaggi secondo un template configurato so GovIO. Il tracciato deve poter essere aggiornato in ogni momento andando a sostituire quello precedente nella pianificazione.
+Il servizio prevede che un cittadino venga notificato della scadenza della propria CIE 90, 60, 30 e 7 giorni prima della scadenza con un messaggio di promemoria ed un giorno dopo con la notifica dell'avvenuta scadenza. L'utente sottomette un tracciato CSV in un formato proprietario contenente, tra le altre, le informazioni necessarie alla spedizione di messaggi secondo un template configurato in GovIO. Il tracciato deve poter essere aggiornato in ogni momento andando a sostituire quello precedente nella pianificazione.
 
 Quotidianamente un batch legge il tracciato ed individua i messaggi da spedire producendo un CSV di alimentazione di GovIO che viene successivamente caricato tramite chiamata a servizi.
 
@@ -14,7 +14,7 @@ Si prevedono i seguenti moduli:
 
 
 - Rest API: API per gestire le seguenti risorse
-  - /files : per l'upload, download e consultazione metadati dei tracciati csv di scadenze CIE
+  - /expiration_files : per l'upload, download e consultazione metadati dei tracciati csv di scadenze CIE
   - /govio_files : per download e consultazione metadati dei tracciati csv di notifiche scadenza CIE prodotti
 - WebApp Angular: console di gestione con le seguenti funzioni
   - Tracciati scadenze: consente l'upload del tracciato CSV delle scadenze CIE. La sezione mostra lo storico dei tracciati caricati  la data di upload ed utente che l'ha effettuato.
@@ -34,11 +34,11 @@ Si prevedono i seguenti moduli:
 
 ```mermaid
 erDiagram
-    govio_service_istances ||..o{ govio_loader_files : belongs
-    govhub_users ||..o{ govio_loader_files : upload  
-    govio_loader_files ||..o{ govio_loader_files_out : produces
+    govio_service_istances ||..o{ govio_loader_exp_files : belongs
+    govhub_users ||..o{ govio_loader_exp_files : upload  
+    govio_loader_exp_files ||..o{ govio_loader_govio_files : produces
 
-    govio_loader_files {
+    govio_loader_exp_files {
         long id PK
         long id_govauth_user FK "utenza che ha caricato il file" 
         long id_govio_service_istance FK
@@ -47,8 +47,8 @@ erDiagram
         datetime creation_date "Data di upload"
     }
 
-    govio_loader_files_out {
-        long id_govio_file fk
+    govio_loader_govio_files {
+        long id_govio_loader_exp_files fk
         string location "Path del file" 
         string status "Stato di spedizione a govio"
         datetime creation_date "Data di creazione"
