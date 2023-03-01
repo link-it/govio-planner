@@ -1,6 +1,6 @@
 # govio-loader-cie
 
-Modulo di pianificazione delle notifiche di spedizione per il rinnovo della CIE.
+Modulo di pianificazione delle notifiche di scadenza della CIE.
 
 ## Funzionamento di base
 
@@ -14,11 +14,11 @@ Si prevedono i seguenti moduli:
 
 
 - Rest API: API per gestire le seguenti risorse
-  - /files : per il caricamento e consultazione dei file caricati
-  - /govio_files : per la consultazione dei file prodotti
+  - /files : per l'upload, download e consultazione metadati dei tracciati csv di scadenze CIE
+  - /govio_files : per download e consultazione metadati dei tracciati csv di notifiche scadenza CIE prodotti
 - WebApp Angular: console di gestione con le seguenti funzioni
-  - Sezione tracciati di alimentazione: consente il caricamento del tracciato CSV delle scadenze CIE e visualizzare i tracciati precedenti con la data di upload e l'utente che ha caricato il file.
-  - Sezione notifiche prodotte: consente di visualizzare il tracciato giornaliero delle notifiche prodotte dal sistema con lo stato di spedizione a GovIO
+  - Tracciati scadenze: consente l'upload del tracciato CSV delle scadenze CIE. La sezione mostra lo storico dei tracciati caricati  la data di upload ed utente che l'ha effettuato.
+  - Tracciati notifiche: permette la consultazione dei tracciati giornalieri delle notifiche e lo stato di spedizione a GovIO
 - Batch di elaborazione quotidiana dei tracciati
   - Job di schedulazione: processa l'ultimo file caricato e individua nuove notifiche da inviare secondo le cadenze previste (-90/-60/-30/-7/+1)
 - Job di upload: le notifiche sono riversate in un CSV e caricati in GovIO 
