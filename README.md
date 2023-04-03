@@ -50,6 +50,7 @@ erDiagram
         long id_govio_loader_exp_files fk
         string location "Path del file" 
         string status "Stato di spedizione a govio"
+        long message_count "Numero di messaggi nel file"
         datetime creation_date "Data di creazione"
     }
 
