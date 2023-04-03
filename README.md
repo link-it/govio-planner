@@ -20,8 +20,8 @@ Si prevedono i seguenti moduli:
   - Tracciati scadenze: consente l'upload del tracciato CSV delle scadenze CIE. La sezione mostra lo storico dei tracciati caricati  la data di upload ed utente che l'ha effettuato.
   - Tracciati notifiche: permette la consultazione dei tracciati giornalieri delle notifiche e lo stato di spedizione a GovIO
 - Batch di elaborazione quotidiana dei tracciati
-  - Job di schedulazione: processa l'ultimo file caricato e individua nuove notifiche da inviare secondo le cadenze previste (-90/-60/-30/-7/+1) producendo un file che viene inserito nella tabella `govio_loader_govio_files`
-  - Job di upload: processo che effettua l'upload dei file nella tabella `govio_loader_govio_files` a GovIO. La URL, le credenziali ed il govio_service_istances da utilizzare nell'upload è un parametro di configurazione nell'`application.properties`
+  - Job di schedulazione: processa l'ultimo file caricato e individua nuove notifiche da inviare secondo le cadenze previste (-90/-60/-30/-7/+1) producendo un file che viene inserito nella tabella `govio_planner_govio_files`
+  - Job di upload: processo che effettua l'upload dei file nella tabella `govio_planner_govio_files` a GovIO. La URL, le credenziali ed il govio_service_istances da utilizzare nell'upload è un parametro di configurazione nell'`application.properties`
  
 ## Note
 
@@ -33,21 +33,19 @@ Si prevedono i seguenti moduli:
 
 ```mermaid
 erDiagram
-    govio_service_istances ||..o{ govio_loader_exp_files : belongs
-    govhub_users ||..o{ govio_loader_exp_files : upload  
-    govio_loader_exp_files ||..o{ govio_loader_govio_files : produces
+    govhub_users ||..o{ govio_planner_exp_files : upload  
+    govio_planner_exp_files ||..o{ govio_planner_govio_files : produces
 
-    govio_loader_exp_files {
+    govio_planner_exp_files {
         long id PK
         long id_govauth_user FK "utenza che ha caricato il file" 
-        long id_govio_service_istance FK
         string name "Nome del file"
         string location "Path del file"
         datetime creation_date "Data di upload"
     }
 
-    govio_loader_govio_files {
-        long id_govio_loader_exp_files fk
+    govio_planner_govio_files {
+        long id_govio_planner_exp_files fk
         string location "Path del file" 
         string status "Stato di spedizione a govio"
         long message_count "Numero di messaggi nel file"
