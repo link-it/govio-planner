@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
@@ -12,6 +13,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.MediaType;
@@ -23,15 +25,20 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 
+import it.govhub.govregistry.commons.config.CommonsExportedBeans;
+import it.govhub.govregistry.commons.config.TimeZoneConfigurer;
 import it.govhub.govregistry.commons.exception.handlers.RequestRejectedExceptionHandler;
 import it.govhub.govregistry.commons.utils.Base64String;
 import it.govhub.govregistry.commons.utils.Base64StringSerializer;
+import it.govhub.govregistry.readops.api.config.ReadOpsExportedBeans;
 
 @SpringBootApplication
 @EnableScheduling
 @EnableCaching
 @EnableJpaRepositories("it.govhub.govio.planner.api.repository")
 @ComponentScan( {"it.govhub.govio.planner" })
+@EntityScan("it.govhub.govio.planner.api.entity")
+@Import({ ReadOpsExportedBeans.class,  CommonsExportedBeans.class,   TimeZoneConfigurer.class})
 public class Application  extends SpringBootServletInitializer {
 	
 	public static void main(String[] args) {

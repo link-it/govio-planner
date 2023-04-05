@@ -66,9 +66,9 @@ public class ExpirationCIEFileEntity {
 	private Status status;
 	
 	@Column(name = "size")
-	private long size;
+	private Long size;
 
-	@OneToMany(mappedBy = "id_govio_planner_exp_files")
+	@OneToMany(mappedBy = "expirationFile")
 	@Builder.Default
 	private Set<GovioFileProducedEntity> govioFiles = new HashSet<>();
 

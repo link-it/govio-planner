@@ -10,11 +10,6 @@ import java.time.Instant;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.http.fileupload.FileItemIterator;
@@ -64,7 +59,6 @@ public class FileController implements FileApi {
 	public ResponseEntity<ExpirationFile> uploadExpirations(MultipartFile file) {
 		
 		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_OPERATOR);
-		
 		
 		HttpServletRequest request = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
 		

@@ -8,9 +8,12 @@ import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
@@ -49,9 +52,10 @@ public class GovioFileProducedEntity {
 	private Path location;
 	
 	@Column(name = "size")
-	private long size;
+	private Long size;
 
-	@Column(name = "id_govio_planner_exp_files")
+	@ManyToOne
+	@JoinColumn(name = "id_govio_planner_file", nullable = false, foreignKey = @ForeignKey(name = "GovioFileProducedEntity_GovioPlannerFile"))
 	private ExpirationCIEFileEntity expirationFile;
 
 }

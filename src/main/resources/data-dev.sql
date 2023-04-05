@@ -1,6 +1,6 @@
 -- Applicazione
 
-INSERT INTO public.govhub_applications(id, application_id, name, deployed_uri, logo_type, logo_color, logo_bg_color) VALUES (3, 'govio_planner-operator', 'GovIO Planner', 'http://localhost:10003', 'SVG', '#FFFF00', '#0000FF');
+INSERT INTO public.govhub_applications(id, application_id, name, deployed_uri, logo_type, logo_color, logo_bg_color) VALUES (3, 'govio_planner', 'GovIO Planner', 'http://localhost:10003', 'SVG', '#FFFF00', '#0000FF');
 
 -- Utenti
 
@@ -8,7 +8,7 @@ INSERT INTO public.govhub_users (id, principal, full_name, email, enabled) VALUE
 
 -- Ruoli
 
-INSERT INTO public.govhub_roles (id, id_govhub_application, name) VALUES (nextval('public.seq_govhub_roles'), 3, 'govio_planner-operator');
+INSERT INTO public.govhub_roles (id, id_govhub_application, name) VALUES (nextval('public.seq_govhub_roles'), 3, 'govio_planner_operator');
 
 -- Organizzazioni
 
@@ -19,7 +19,7 @@ INSERT INTO public.govhub_organizations (id, tax_code, legal_name, office_at, of
 INSERT INTO public.govhub_services (id, name, description) VALUES (nextval('public.seq_govhub_services'), 'service-1', 'Servizio per fare cose');
 
 
--- pianificatore-scadenze -> govio_planner-operator
+-- Assegno ruolo pianificatore-scadenze -> govio_planner-operator
 
 INSERT INTO public.govhub_authorizations (id, id_govhub_user, id_govhub_role) VALUES (
 	nextval('public.seq_govhub_authorizations'),
@@ -34,8 +34,8 @@ declare
 	scaduta_placeholder_id integer;
 	cie_placeholder_id integer;
 begin
-	INSERT INTO govio_templates(id, message_body, subject, has_due_date, has_payment) 
-	VALUES (nextval('public.seq_govio_templates'), 'Salve, con la presente la informiamo che in data ${due_date} ${scade-scaduta} la Carta di Identità elettronica numero ${cie}. Per maggiori informazioni sulle modalità di rinnovo può consultare https://comune.dimostrativo.it.', 'Scadenza CIE n. ${cie}', true, false) 
+	INSERT INTO govio_templates(id, name, message_body, subject, has_due_date, has_payment) 
+	VALUES (nextval('public.seq_govio_templates'), 'Scadenza CIE', 'Salve, con la presente la informiamo che in data ${due_date} ${scade-scaduta} la Carta di Identità elettronica numero ${cie}. Per maggiori informazioni sulle modalità di rinnovo può consultare https://comune.dimostrativo.it.', 'Scadenza CIE n. ${cie}', true, false) 
 	returning id into template_id;
 
 	INSERT INTO govio_placeholders(id, name, type, example) VALUES (
@@ -51,7 +51,7 @@ begin
 		'è scaduta') returning id into scaduta_placeholder_id;
 
 	INSERT INTO govio_template_placeholders(id_govio_template, id_govio_placeholder, mandatory, position) VALUES (template_id, cie_placeholder_id, true, 1);
-	INSERT INTO govio_template_placeholders(id_govio_template, id_govio_placeholder, mandatory, position) VALUES (template_id, scaduta_placeholder_id, true, 1);
+	INSERT INTO govio_template_placeholders(id_govio_template, id_govio_placeholder, mandatory, position) VALUES (template_id, scaduta_placeholder_id, true, 2);
 
 	INSERT INTO govio_service_instances(id, id_govhub_service, id_govhub_organization, id_govio_template,apikey) 
 	VALUES (
