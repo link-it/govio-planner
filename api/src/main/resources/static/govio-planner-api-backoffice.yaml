@@ -1,0 +1,189 @@
+openapi: 3.0.3
+info:
+  title: GovIO Planner API
+  x-summary: GovIO Planner Communications
+  x-api-id: govio-planner-backoffice
+  version: 1.0.1
+tags:
+  - name: file
+  
+servers:
+  - url: 'http://localhost:10001'
+    description: Sample Deployment URL (Not Actual)
+security:
+  - header-principal: []
+  
+paths:
+
+  /expiration-files:
+    post:
+      tags:
+        - file
+      summary: Sends a new CIE expiration file
+      description: >
+         The file is a csv describing the expiration dates for a CIE card so that citiziens can be notified
+         in time regarding this expiration date.
+      operationId: uploadExpirations
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+            encoding:
+              file:
+                contentType: text/csv      
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpirationFile'
+        '400':
+          $ref: 'govhub-api-commons.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'govhub-api-commons.yaml#/components/responses/401Unauthorized'
+        '403':
+          $ref: 'govhub-api-commons.yaml#/components/responses/403Forbidden'
+        '429':
+          $ref: 'govhub-api-commons.yaml#/components/responses/429TooManyRequests'
+        '503':
+          $ref: 'govhub-api-commons.yaml#/components/responses/503ServiceUnavailable'
+        default:
+          $ref: 'govhub-api-commons.yaml#/components/responses/ResponseDefault'
+          
+  /govio-files:
+    get:
+      tags:
+        - file
+      summary: Retrieve the generated csv govio file list.
+      description: >
+       The govio-planner-batch periodically reads the last uploaded file and then produces the csv with
+       the messages to send to IO, through GovIO. This operation retrieve the generated csv message files.
+      operationId: listGovioFiles
+      parameters:
+         - $ref: "govhub-api-commons.yaml#/components/parameters/limit"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/offset"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/q_query"
+         - $ref: "#/components/parameters/expiration_file_id"
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/hal+json:
+              schema:
+                 $ref: "#/components/schemas/GovioFileList"
+        '400':
+          $ref: "govhub-api-commons.yaml#/components/responses/400BadRequest"
+        '401':
+          $ref: "govhub-api-commons.yaml#/components/responses/401Unauthorized"
+        '403':
+          $ref: "govhub-api-commons.yaml#/components/responses/403Forbidden"
+        '429':
+          $ref: "govhub-api-commons.yaml#/components/responses/429TooManyRequests"
+        '503':
+          $ref: "govhub-api-commons.yaml#/components/responses/503ServiceUnavailable"
+        default:
+          $ref: "govhub-api-commons.yaml#/components/responses/ResponseDefault"       
+                         
+  
+components:
+
+   parameters:
+   
+    expiration_file_id:
+      name: expiration_file_id
+      in: query
+      description: Govio Planner File ID that originated the govio files
+      required: false
+      schema:
+            $ref: "#/components/schemas/ExpirationFileId"        
+        
+
+   schemas:
+   
+      ExpirationFile:
+         type: object
+         additionalProperties: false
+         required:
+            - id
+         properties:
+            id:
+               $ref: "#/components/schemas/ExpirationFileId"
+            uploader_id:
+               $ref: "govhub-api-commons.yaml#/components/schemas/UserId"
+            service_instance_id: 
+               $ref: "govio-api-backoffice.yaml#/components/schemas/GovioServiceInstanceId"
+            filename:
+               $ref: "govio-api-backoffice.yaml#/components/schemas/FileName"
+            creation_date:
+               type: string
+               format: date-time
+
+      GovioFile:
+         type: object
+         additionalProperties: false
+         required:
+            - id
+         properties:
+            id:
+               $ref: "#/components/schemas/ExpirationFileId"
+            creation_date:
+               type: string
+               format: date-time
+            message_count:
+              type: integer
+              format: int64
+              minimum: 0
+              maximum: 9223372036854775807
+            status:
+              $ref: "#/components/schemas/GovioFileStatus"
+              
+      GovioFileList:
+         allOf:
+            - $ref: "govhub-api-commons.yaml#/components/schemas/List"
+            - type: object
+              additionalProperties: false
+              properties:              
+                 items:
+                    type: array
+                    items:
+                       $ref: "#/components/schemas/GovioFile"
+                    minItems: 0
+                    maxItems: 2147483647
+              required:
+                 - items 
+              
+      ExpirationFileId:
+         type: integer
+         format: int64
+         minimum: 0
+         maximum: 9223372036854775807
+         example: 1
+         description: Expiration File identifier.
+
+      GovioFileStatus:
+        type: string
+        enum:
+          - created
+          - sent
+          - throttled
+               
+               
+               
+               
+               
+               
+               
+               
+               
+               
+               
+               
+               
+            
+               
