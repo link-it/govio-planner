@@ -34,7 +34,7 @@ Si prevedono i seguenti moduli:
 ```mermaid
 erDiagram
     govhub_users ||..o{ govio_planner_exp_files : upload  
-    govio_planner_exp_files ||..o{ govio_planner_govio_files : produces
+    govio_planner_exp_files ||..o{ govio_planner_ntfy_files : produces
 
     govio_planner_exp_files {
         long id PK
