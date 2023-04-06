@@ -44,7 +44,7 @@ erDiagram
         datetime creation_date "Data di upload"
     }
 
-    govio_planner_govio_files {
+    govio_planner_ntfy_files {
         long id_govio_planner_exp_files fk
         string location "Path del file" 
         string status "Stato di spedizione a govio"
