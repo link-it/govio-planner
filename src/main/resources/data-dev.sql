@@ -24,7 +24,7 @@ INSERT INTO public.govhub_services (id, name, description) VALUES (nextval('publ
 INSERT INTO public.govhub_authorizations (id, id_govhub_user, id_govhub_role) VALUES (
 	nextval('public.seq_govhub_authorizations'),
 	(SELECT id FROM public.govhub_users WHERE principal='pianificatore-scadenze'),
-	(SELECT id FROM public.govhub_roles WHERE name='govio_planner-operator' )
+	(SELECT id FROM public.govhub_roles WHERE name='govio_planner_operator' )
 );
 
 do $$

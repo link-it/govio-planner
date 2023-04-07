@@ -28,6 +28,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Riferisce Un file CSV contente le scadenze delle carte di identità.
+ *
+ */
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -65,7 +70,10 @@ public class ExpirationCIEFileEntity {
 	@Enumerated(EnumType.STRING)
 	private Status status;
 	
-	@Column(name = "size")
+	@Column(name = "plan_id", nullable = false, length = 512)
+	private String planId;
+	
+	@Column(name = "size", nullable = false)
 	private Long size;
 
 	@OneToMany(mappedBy = "expirationFile")

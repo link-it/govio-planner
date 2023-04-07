@@ -4,6 +4,6 @@ import org.springframework.data.jpa.repository.support.JpaRepositoryImplementati
 
 import it.govhub.govio.planner.api.entity.ExpirationCIEFileEntity;
 
-public interface ExpirationCsvFileEntityRepository extends JpaRepositoryImplementation<ExpirationCIEFileEntity,Long>{
+public interface ExpirationCIEFileEntityRepository extends JpaRepositoryImplementation<ExpirationCIEFileEntity,Long>{
 
 }

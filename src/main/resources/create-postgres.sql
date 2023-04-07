@@ -10,6 +10,7 @@ create table govio_planner_files (
 	size BIGINT,
 	status varchar(255) not null,
 	id_govauth_user int8 not null,
+	plan_id varchar(255) not null
 	primary key (id)
 );
 
