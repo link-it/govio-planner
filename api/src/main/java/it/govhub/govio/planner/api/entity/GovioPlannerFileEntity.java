@@ -57,6 +57,9 @@ public class GovioPlannerFileEntity {
 	@Column(name = "location",  length = 1024, nullable = false)
 	private Path location;
 	
+	@Column(name = "name", nullable = false, unique = true)
+	private String name;
+	
 	@Column(name = "size", nullable = false)
 	private Long size;
 	

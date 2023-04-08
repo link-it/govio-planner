@@ -187,13 +187,17 @@ public class FileController implements FileApi {
 	
 
 	@Override
-	public ResponseEntity<ExpirationFileList> listExpirationFiles( Direction sortDirection, Integer limit,	Long offset,String q, List<ExpirationFileEmbeds> embed) {
+	public ResponseEntity<ExpirationFileList> listExpirationFiles(Direction sortDirection, Integer limit,	Long offset,String q, List<ExpirationFileEmbeds> embed) {
 
 		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_OPERATOR);
 
 		LimitOffsetPageRequest pageRequest = new LimitOffsetPageRequest(offset, limit,Sort.by(sortDirection, ExpirationFileEntity_.CREATION_DATE));
 		
-		Page<ExpirationFileEntity> files = this.expirationsFileRepo.findAll(ExpirationFileFilters.empty(), pageRequest.pageable);
+		var spec = ExpirationFileFilters.empty();
+		if (!StringUtils.isBlank(q) ) {
+			spec = ExpirationFileFilters.byName("").or(ExpirationFileFilters.byGovioFilename(""));
+		}
+		Page<ExpirationFileEntity> files = this.expirationsFileRepo.findAll(spec, pageRequest.pageable);
 		
 		HttpServletRequest curRequest = ((ServletRequestAttributes) RequestContextHolder
 				.currentRequestAttributes()).getRequest();

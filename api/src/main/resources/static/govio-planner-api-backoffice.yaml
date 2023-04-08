@@ -484,6 +484,10 @@ components:
          additionalProperties: false
          required:
             - id
+            - creation_date
+            - message_count
+            - status
+            - filename
          properties:
             id:
                $ref: "#/components/schemas/GovioFileId"
@@ -499,6 +503,8 @@ components:
               $ref: "#/components/schemas/GovioFileStatus"
             expiration_file_id:
               $ref: "#/components/schemas/ExpirationFileId"
+            filename:
+               $ref: "govio-api-backoffice.yaml#/components/schemas/FileName"
             _links:
                  type: object
                  additionalProperties: false

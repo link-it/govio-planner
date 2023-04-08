@@ -15,6 +15,16 @@ public class ExpirationFileFilters {
 		public static Specification<ExpirationFileEntity> empty() {
 			return (Root<ExpirationFileEntity> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> null; 
 		}
+
+		public static Specification<ExpirationFileEntity> byName(String string) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public static Specification<ExpirationFileEntity> byGovioFilename(String string) {
+			// TODO Auto-generated method stub
+			return null;
+		}
 		
 		
 

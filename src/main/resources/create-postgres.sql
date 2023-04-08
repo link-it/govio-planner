@@ -18,6 +18,7 @@ create table govio_planner_govio_files (
  	id BIGINT not null,
 	creation_date timestamp not null,
 	location varchar(1024) not null,
+    name varchar(255) not null,
 	size BIGINT,
 	status varchar(255) not null,
 	id_govio_planner_file int8 not null,
