@@ -17,9 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import it.govhub.govio.planner.api.entity.ExpirationCIEFileEntity;
-import it.govhub.govio.planner.api.entity.ExpirationCIEFileEntity.Status;
-import it.govhub.govio.planner.api.repository.ExpirationCIEFileEntityRepository;
+import it.govhub.govio.planner.api.entity.ExpirationFileEntity;
+import it.govhub.govio.planner.api.entity.ExpirationFileEntity.Status;
+import it.govhub.govio.planner.api.repository.ExpirationFileEntityRepository;
 import it.govhub.govregistry.commons.exception.InternalException;
 import it.govhub.security.services.SecurityService;
 
@@ -30,7 +30,7 @@ public class PlannerFileService {
 	Path fileRepositoryPath;
 	
 	@Autowired
-	ExpirationCIEFileEntityRepository fileRepo;
+	ExpirationFileEntityRepository fileRepo;
 	
 	@Autowired
 	SecurityService authService;
@@ -39,7 +39,7 @@ public class PlannerFileService {
 	
 	
 	@Transactional
-	public ExpirationCIEFileEntity uploadCSV(String planId, String sourceFilename, FileItemStream itemStream) {
+	public ExpirationFileEntity uploadCSV(String planId, String sourceFilename, FileItemStream itemStream) {
 		log.info("Uploading expiration file {} for Govio-Plan: {}", sourceFilename,  planId);
 		
 		Path destPath = this.fileRepositoryPath
@@ -65,7 +65,7 @@ public class PlannerFileService {
 			throw new InternalException(e);	
 		}
     	
-    	ExpirationCIEFileEntity file = ExpirationCIEFileEntity.builder()
+    	ExpirationFileEntity file = ExpirationFileEntity.builder()
     			.planId(planId)
     			.creationDate(OffsetDateTime.now())
     			.uploaderUser(SecurityService.getPrincipal())

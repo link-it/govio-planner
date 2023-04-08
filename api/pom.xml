@@ -265,7 +265,7 @@
 						<configuration>
 							<inputSpec>${project.basedir}/src/main/resources/static/govio-planner-api-backoffice.yaml</inputSpec>
 							<generatorName>govhub-codegen</generatorName>
-								<importMappings>
+							<importMappings>
 								<!-- IMPORT MAPPINGS DI GOVHUB-COMMONS -->
 								<importMapping>Direction=org.springframework.data.domain.Sort.Direction</importMapping>
 								<importMapping>PageInfo=it.govhub.govregistry.commons.api.beans.PageInfo</importMapping>
@@ -276,7 +276,10 @@
 								<importMapping>AuthorizationOrdering=it.govhub.govregistry.commons.api.beans.AuthorizationOrdering</importMapping>
 								<importMapping>User=it.govhub.govregistry.commons.api.beans.User</importMapping>
 								<importMapping>UserCreate=it.govhub.govregistry.commons.api.beans.UserCreate</importMapping>
-								</importMappings>
+							</importMappings>
+							<schemaMappings>
+								<schemaMapping>GovioFileStatus=it.govhub.govio.planner.api.entity.GovioPlannerFileEntity.Status</schemaMapping>
+							</schemaMappings>
 							<configOptions>
 								<dateLibrary>java8</dateLibrary>
 								<library>spring-boot</library>
@@ -288,10 +291,6 @@
 								<skipDefaultInterface>true</skipDefaultInterface>
 								<interfaceOnly>true</interfaceOnly>
 								<hateoas>true</hateoas>
-								<!-- Metto il booleanGetterPrefix a get, e.g.: getEnabled invece 
-									di isEnabled. questo in modo da far riconoscere e copiare le proprietà booleane 
-									alla BeanUtils.copyProperties -->
-								<booleanGetterPrefix>get</booleanGetterPrefix>
 								<useTags>true</useTags>
 							</configOptions>
 							<output>${project.basedir}/target</output>

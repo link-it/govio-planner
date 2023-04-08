@@ -12,12 +12,13 @@ import org.springframework.stereotype.Component;
 
 import it.govhub.govio.planner.api.beans.ExpirationFile;
 import it.govhub.govio.planner.api.beans.ExpirationFileEmbeds;
-import it.govhub.govio.planner.api.entity.ExpirationCIEFileEntity;
+import it.govhub.govio.planner.api.entity.ExpirationFileEntity;
 import it.govhub.govio.planner.api.web.FileController;
+import it.govhub.govio.planner.api.web.UserController;
 import it.govhub.govregistry.readops.api.assemblers.UserAssembler;
 
 @Component
-public class ExpirationFileAssembler extends RepresentationModelAssemblerSupport<ExpirationCIEFileEntity, ExpirationFile> {
+public class ExpirationFileAssembler extends RepresentationModelAssemblerSupport<ExpirationFileEntity, ExpirationFile> {
 
 	@Autowired
 	UserAssembler userAssembler;
@@ -29,7 +30,7 @@ public class ExpirationFileAssembler extends RepresentationModelAssemblerSupport
 
 	
 	@Override
-	public ExpirationFile toModel(ExpirationCIEFileEntity src) {
+	public ExpirationFile toModel(ExpirationFileEntity src) {
 		
     	ExpirationFile ret = new ExpirationFile()
     			.creationDate(src.getCreationDate())
@@ -46,13 +47,17 @@ public class ExpirationFileAssembler extends RepresentationModelAssemblerSupport
 			.add(
 				linkTo(
 						methodOn(FileController.class).downloadExpirationsFile(src.getId()))
-				.withSelfRel());
+				.withRel("content"))
+			.add(
+					linkTo(
+							methodOn(UserController.class).readUser(src.getUploaderUser().getId()))
+					.withRel("uploader"));
     	
 		return ret;
 	}
 	
 	
-	public ExpirationFile toEmbeddedModel(ExpirationCIEFileEntity src, Set<ExpirationFileEmbeds> embeds) {
+	public ExpirationFile toEmbeddedModel(ExpirationFileEntity src, Set<ExpirationFileEmbeds> embeds) {
 		var ret = this.toModel(src);
 		
 		if (!embeds.isEmpty()) {  
@@ -69,7 +74,7 @@ public class ExpirationFileAssembler extends RepresentationModelAssemblerSupport
 	}
 	
 	
-	public ExpirationFile toEmbeddedModel(ExpirationCIEFileEntity src) {
+	public ExpirationFile toEmbeddedModel(ExpirationFileEntity src) {
 		return this.toEmbeddedModel(src, Set.of(ExpirationFileEmbeds.values()));
 	}
 	

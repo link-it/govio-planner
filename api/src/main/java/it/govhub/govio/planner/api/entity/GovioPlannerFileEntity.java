@@ -37,9 +37,9 @@ import lombok.ToString;
 @ToString
 @Entity
 @Table(name = "govio_planner_govio_files")
-public class GovioFileProducedEntity {
+public class GovioPlannerFileEntity {
 
-	public enum Status {CREATED, PROCESSING, PROCESSED}
+	public enum Status {CREATED, THROTTLED, SENT}
 	
 	@Id 
 	@SequenceGenerator(name="seq_govio_planner_govio_files",sequenceName="seq_govio_planner_govio_files", initialValue=1, allocationSize=1)
@@ -59,9 +59,12 @@ public class GovioFileProducedEntity {
 	
 	@Column(name = "size", nullable = false)
 	private Long size;
+	
+	@Column(name = "message_count", nullable = false, columnDefinition = "BIGINT")
+	private Long messageCount;
 
 	@ManyToOne
 	@JoinColumn(name = "id_govio_planner_file", nullable = false, foreignKey = @ForeignKey(name = "GovioFileProducedEntity_GovioPlannerFile"))
-	private ExpirationCIEFileEntity expirationFile;
+	private ExpirationFileEntity expirationFile;
 
 }

@@ -186,6 +186,7 @@ paths:
          - $ref: "govhub-api-commons.yaml#/components/parameters/offset"
          - $ref: "govhub-api-commons.yaml#/components/parameters/q_query"
          - $ref: "#/components/parameters/expiration_file_id_query"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/sort_direction_query"
       responses:
         '200':
           description: Successful operation.
@@ -247,7 +248,7 @@ paths:
         - file
       summary: Download the the generated CSV that has to be sento to GovIO.
       description:  This operation downloads a specified generated csv message file.
-      operationId: downloadGovioFileInfo
+      operationId: downloadGovioFile
       responses:
         '200':
           description: Successful operation.
@@ -447,13 +448,15 @@ components:
                        $ref: "govhub-api-commons.yaml#/components/schemas/Link"
                     content:
                        $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                    uploader:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"                       
                  example:
                     self:
                        href: "https://govhub.it/govio-planner/expiration-files/1"
                     content:
                        href: "https://govhub.it/govio-planner/expiration-files/1/content"
                     uploader:
-                       href: "https://govhub.it/govio-planner/users/1/content"                       
+                       href: "https://govhub.it/govio-planner/users/1"                       
             _embedded:
               type: object
               additionalProperties: false
@@ -494,14 +497,33 @@ components:
               maximum: 9223372036854775807
             status:
               $ref: "#/components/schemas/GovioFileStatus"
-              
+            expiration_file_id:
+              $ref: "#/components/schemas/ExpirationFileId"
+            _links:
+                 type: object
+                 additionalProperties: false
+                 properties:
+                    self:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                    content:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                    expiration-file:
+                      $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                 example:
+                    self:
+                       href: "https://govhub.it/govio-planner/govio-files/1"
+                    content:
+                       href: "https://govhub.it/govio-planner/govio-files/1/content"
+                    expiration-file:
+                       href: "https://govhub.it/govio-planner/expiration-files/1"                       
+
       GovioFileId:
          type: integer
          format: int64
          minimum: 0
          maximum: 9223372036854775807
          example: 1
-         description: Expiration File identifier.                         
+         description: Govio File identifier.                         
               
       GovioFileList:
          allOf:

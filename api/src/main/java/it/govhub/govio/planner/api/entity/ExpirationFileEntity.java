@@ -40,7 +40,7 @@ import lombok.ToString;
 @ToString
 @Entity
 @Table(name = "govio_planner_files")
-public class ExpirationCIEFileEntity {
+public class ExpirationFileEntity {
 	
 	public enum Status {CREATED, PROCESSING, PROCESSED}
 	
@@ -78,6 +78,6 @@ public class ExpirationCIEFileEntity {
 
 	@OneToMany(mappedBy = "expirationFile")
 	@Builder.Default
-	private Set<GovioFileProducedEntity> govioFiles = new HashSet<>();
+	private Set<GovioPlannerFileEntity> govioFiles = new HashSet<>();
 
 }
