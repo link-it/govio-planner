@@ -1,0 +1,56 @@
+stages:
+    - test
+    - build
+    - deploy
+
+variables: 
+    MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+    SONAR_HOST_URL: "http://localsonarqube:9000/"
+    SONAR_TOKEN: "squ_35c667f3567119d5702ffa5fb92ca6eaac5889a6"
+    SONAR_USER: "gitlab-runner"
+    SONAR_PASSWORD: "Password@123"
+    DEPLOY_STAGING_SSH_HOST: "ec2-user@172.16.1.121"
+default:
+    cache:
+        paths:
+            - .m2/repository/
+            - target/
+    image: maven:3-openjdk-11
+
+test:
+    stage: test
+    script:
+      - mvn verify sonar:sonar -U
+    artifacts:
+        untracked: false
+        name: test_and_coverage_report
+        reports:
+          junit: [ api/target/surefire-reports/*.xml ]
+        expire_in: "1 week"
+
+build_java:
+    stage: build
+    script:
+      - mkdir ~/.ssh
+      - chmod 700 ~/.ssh 
+      - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+      - mvn -s /tmp/maven_settings/settings-repo_linkit.xml -U deploy -Pwar -DskipTests=true 
+    artifacts:
+        paths:
+          - api/target/govio-planner.war
+    only:
+      - main
+      - staging
+
+deploy_staging:
+  stage: deploy
+  image: kroniak/ssh-client
+  script:
+    - cp -r /tmp/ssh/ ~/.ssh
+    - scp -r api/target/govio-planner.war $DEPLOY_STAGING_SSH_HOST:/tmp/
+    - ssh $DEPLOY_STAGING_SSH_HOST 'sudo systemctl stop tomcat'
+    - ssh $DEPLOY_STAGING_SSH_HOST 'sudo cp -r /tmp/govio-planner.war /opt/apache-tomcat-9.0.70/webapps/'  
+    - ssh $DEPLOY_STAGING_SSH_HOST 'sudo systemctl start tomcat'
+    - ssh $DEPLOY_STAGING_SSH_HOST 'sudo rm -rf /tmp/govio-planner.war'
+  only:
+    - staging
