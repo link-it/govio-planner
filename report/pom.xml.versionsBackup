@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.7.0</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+
+	<groupId>it.govhub.govregistry</groupId>
+	<artifactId>report</artifactId>
+	<packaging>pom</packaging>
+	<version>1.0.0</version>
+	<name>GovRegistry - Report</name>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- JaCoCo Properties -->
+    		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+		<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
+		<sonar.language>java</sonar.language>
+	</properties>
+
+	<dependencies>
+		<dependency>
+    <groupId>org.jacoco</groupId> 
+    <artifactId>jacoco-maven-plugin</artifactId>
+    <version>0.8.8</version>
+    </dependency>
+    <dependency>
+            <groupId>it.govhub.govregistry</groupId>
+            <artifactId>api</artifactId>
+            <version>1.0.0</version>
+    </dependency>
+       <dependency>
+            <groupId>it.govhub.govregistry</groupId>
+            <artifactId>commons</artifactId>
+            <version>1.0.0</version>
+    </dependency>
+           <dependency>
+            <groupId>it.govhub.security</groupId>
+            <artifactId>security</artifactId>
+            <version>1.0.0</version>
+    </dependency>
+
+    </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.8</version>
+        <executions>
+          <execution>
+            <id>report-aggregate</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report-aggregate</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build></project>

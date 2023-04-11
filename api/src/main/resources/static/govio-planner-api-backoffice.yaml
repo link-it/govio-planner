@@ -1,0 +1,586 @@
+openapi: 3.0.3
+info:
+  title: GovIO Planner API
+  x-summary: GovIO Planner Communications
+  x-api-id: govio-planner-backoffice
+  version: 1.0.1
+  description: >
+    # Warning
+
+    **This is an experimental API that is (most probably) going to change as we
+    evolve the IO platform.**
+
+    # Introduction
+
+    This is the documentation of the GovIO Planner API for 3rd party services. This API
+    enables Public Administration services to plan for the notification to citiziens about
+    the expiration of their CIE.
+    
+    
+tags:
+  - name: file
+  
+servers:
+  - url: 'http://localhost:10001'
+    description: Sample Deployment URL (Not Actual)
+security:
+  - header-principal: []
+  
+paths:
+
+  /expiration-files:
+    post:
+      tags:
+        - file
+      summary: Sends a new CIE expiration file
+      description: >
+         The file is a csv describing the expiration dates for a CIE card so that citiziens can be notified
+         in time regarding this expiration date.
+         CSV Format:
+         cie-number, expiration-date, placeholder1, placeholder2 (TODO: Descrivere i placeholders del template)
+      operationId: uploadExpirationsFile
+      parameters:
+         - $ref: "#/components/parameters/plan_id"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+            encoding:
+              file:
+                contentType: text/csv      
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpirationFile'
+        '400':
+          $ref: 'govhub-api-commons.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'govhub-api-commons.yaml#/components/responses/401Unauthorized'
+        '403':
+          $ref: 'govhub-api-commons.yaml#/components/responses/403Forbidden'
+        '429':
+          $ref: 'govhub-api-commons.yaml#/components/responses/429TooManyRequests'
+        '503':
+          $ref: 'govhub-api-commons.yaml#/components/responses/503ServiceUnavailable'
+        default:
+          $ref: 'govhub-api-commons.yaml#/components/responses/ResponseDefault'
+          
+    get:
+      tags:
+        - file
+      summary: Retrieve the uploaded expiration files
+      description: >
+       The govio-planner-batch periodically reads the last uploaded file and then produces the csv with
+       the messages to send to IO, through GovIO. This operation retrieve the last uploaded files.
+       The query parameter q filters both by the ExpirationFile filename and the GovioFile filename 
+      operationId: listExpirationFiles
+      parameters:
+         - $ref: "govhub-api-commons.yaml#/components/parameters/limit"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/offset"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/q_query"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/sort_direction_query"         
+         - $ref: "#/components/parameters/expiration_file_embeds"
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/hal+json:
+              schema:
+                 $ref: "#/components/schemas/ExpirationFileList"
+        '400':
+          $ref: "govhub-api-commons.yaml#/components/responses/400BadRequest"
+        '401':
+          $ref: "govhub-api-commons.yaml#/components/responses/401Unauthorized"
+        '403':
+          $ref: "govhub-api-commons.yaml#/components/responses/403Forbidden"
+        '429':
+          $ref: "govhub-api-commons.yaml#/components/responses/429TooManyRequests"
+        '503':
+          $ref: "govhub-api-commons.yaml#/components/responses/503ServiceUnavailable"
+        default:
+          $ref: "govhub-api-commons.yaml#/components/responses/ResponseDefault"                 
+          
+  /expiration-files/{id}:
+    parameters:
+      - $ref: "#/components/parameters/expiration_file_id"
+    get:
+      tags:
+        - file
+      summary: Retrieve Informations about an uploaded expirations CSV.
+      description: Retrieve Informations about the expirations CSV with the provided id.
+      operationId: readExpirationsInfo
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/ExpirationFile'          
+        '400':
+          $ref: "govhub-api-commons.yaml#/components/responses/400BadRequest"
+        '401':
+          $ref: "govhub-api-commons.yaml#/components/responses/401Unauthorized"
+        '403':
+          $ref: "govhub-api-commons.yaml#/components/responses/403Forbidden"
+        '404':
+          $ref: "govhub-api-commons.yaml#/components/responses/404NotFound"
+        '429':
+          $ref: "govhub-api-commons.yaml#/components/responses/429TooManyRequests"
+        '503':
+          $ref: "govhub-api-commons.yaml#/components/responses/503ServiceUnavailable"
+        default:
+          $ref: "govhub-api-commons.yaml#/components/responses/ResponseDefault"
+          
+  /expiration-files/{id}/content:
+    parameters:
+      - $ref: '#/components/parameters/expiration_file_id'
+    get:
+      tags:
+        - file
+      summary: Retrieve the file content of the uploaded csv trace.
+      description: Retrieve the file content
+      operationId: downloadExpirationsFile
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: 'govhub-api-commons.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'govhub-api-commons.yaml#/components/responses/401Unauthorized'
+        '403':
+          $ref: 'govhub-api-commons.yaml#/components/responses/403Forbidden'
+        '404':
+          $ref: 'govhub-api-commons.yaml#/components/responses/404NotFound'
+        '429':
+          $ref: 'govhub-api-commons.yaml#/components/responses/429TooManyRequests'
+        '503':
+          $ref: 'govhub-api-commons.yaml#/components/responses/503ServiceUnavailable'
+        default:
+          $ref: 'govhub-api-commons.yaml#/components/responses/ResponseDefault'
+          
+  /govio-files:
+    get:
+      tags:
+        - file
+      summary: Retrieve the generated csv govio file list.
+      description: >
+       The govio-planner-batch periodically reads the last uploaded file and then produces the csv with
+       the messages to send to IO, through GovIO. This operation retrieve the generated csv message files.
+       The query parameter q filters both by the ExpirationFile filename and the GovioFile filename 
+      operationId: listGovioFiles
+      parameters:
+         - $ref: "govhub-api-commons.yaml#/components/parameters/limit"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/offset"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/q_query"
+         - $ref: "#/components/parameters/expiration_file_id_query"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/sort_direction_query"
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/hal+json:
+              schema:
+                 $ref: "#/components/schemas/GovioFileList"
+        '400':
+          $ref: "govhub-api-commons.yaml#/components/responses/400BadRequest"
+        '401':
+          $ref: "govhub-api-commons.yaml#/components/responses/401Unauthorized"
+        '403':
+          $ref: "govhub-api-commons.yaml#/components/responses/403Forbidden"
+        '429':
+          $ref: "govhub-api-commons.yaml#/components/responses/429TooManyRequests"
+        '503':
+          $ref: "govhub-api-commons.yaml#/components/responses/503ServiceUnavailable"
+        default:
+          $ref: "govhub-api-commons.yaml#/components/responses/ResponseDefault"       
+
+  /govio-files/{id}:
+    parameters:
+      - $ref: '#/components/parameters/csv_for_govio_file_id'
+    get:
+      tags:
+        - file
+      summary: Retrieve informations about the generated CSV that has to be sento to GovIO.
+      description: >
+       The govio-planner-batch periodically reads the last uploaded file and then produces the csv with
+       the messages to send to IO, through GovIO. This operation retrieve a specified generated csv message file.
+      operationId: readGovioFileInfo
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GovioFile"
+        '400':
+          $ref: 'govhub-api-commons.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'govhub-api-commons.yaml#/components/responses/401Unauthorized'
+        '403':
+          $ref: 'govhub-api-commons.yaml#/components/responses/403Forbidden'
+        '404':
+          $ref: 'govhub-api-commons.yaml#/components/responses/404NotFound'
+        '429':
+          $ref: 'govhub-api-commons.yaml#/components/responses/429TooManyRequests'
+        '503':
+          $ref: 'govhub-api-commons.yaml#/components/responses/503ServiceUnavailable'
+        default:
+          $ref: 'govhub-api-commons.yaml#/components/responses/ResponseDefault'
+          
+  /govio-files/{id}/content:
+    parameters:
+      - $ref: '#/components/parameters/csv_for_govio_file_id'
+    get:
+      tags:
+        - file
+      summary: Download the the generated CSV that has to be sento to GovIO.
+      description:  This operation downloads a specified generated csv message file.
+      operationId: downloadGovioFile
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: 'govhub-api-commons.yaml#/components/responses/400BadRequest'
+        '401':
+          $ref: 'govhub-api-commons.yaml#/components/responses/401Unauthorized'
+        '403':
+          $ref: 'govhub-api-commons.yaml#/components/responses/403Forbidden'
+        '404':
+          $ref: 'govhub-api-commons.yaml#/components/responses/404NotFound'
+        '429':
+          $ref: 'govhub-api-commons.yaml#/components/responses/429TooManyRequests'
+        '503':
+          $ref: 'govhub-api-commons.yaml#/components/responses/503ServiceUnavailable'
+        default:
+          $ref: 'govhub-api-commons.yaml#/components/responses/ResponseDefault'          
+
+  /profile:
+       get:
+         tags:
+           - profile
+         summary: Retrieve the user profile.
+         description: Retrieve the  logged user profile.
+         operationId: profile
+         responses:
+           '200':
+             description: Successful operation.
+             content:
+               application/hal+json:
+                 schema:
+                   $ref: 'govhub-api-commons.yaml#/components/schemas/Profile'          
+           '400':
+             $ref: "govhub-api-commons.yaml#/components/responses/400BadRequest"
+           '401':
+             $ref: "govhub-api-commons.yaml#/components/responses/401Unauthorized"
+           '403':
+             $ref: "govhub-api-commons.yaml#/components/responses/403Forbidden"
+           '404':
+             $ref: "govhub-api-commons.yaml#/components/responses/404NotFound"
+           '429':
+             $ref: "govhub-api-commons.yaml#/components/responses/429TooManyRequests"
+           '503':
+             $ref: "govhub-api-commons.yaml#/components/responses/503ServiceUnavailable"
+           default:
+             $ref: "govhub-api-commons.yaml#/components/responses/ResponseDefault"
+             
+  /users:
+    get:
+      tags:
+         - user
+      summary: Retrieve the user list.
+      description: Retrieve the user list.
+      operationId: listUsers
+      parameters:
+         - $ref: "govhub-api-commons.yaml#/components/parameters/limit"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/offset"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/q_query"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/enabled_query"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/user_ordering_query"
+         - $ref: "govhub-api-commons.yaml#/components/parameters/sort_direction_query"
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/hal+json:
+              schema:
+                 $ref: "govhub-api-commons.yaml#/components/schemas/UserList"
+        '400':
+          $ref: "govhub-api-commons.yaml#/components/responses/400BadRequest"
+        '401':
+          $ref: "govhub-api-commons.yaml#/components/responses/401Unauthorized"
+        '403':
+          $ref: "govhub-api-commons.yaml#/components/responses/403Forbidden"
+        '429':
+          $ref: "govhub-api-commons.yaml#/components/responses/429TooManyRequests"
+        '503':
+          $ref: "govhub-api-commons.yaml#/components/responses/503ServiceUnavailable"
+        default:
+          $ref: "govhub-api-commons.yaml#/components/responses/ResponseDefault"       
+
+  /users/{id}:
+    parameters:
+      - $ref: "govhub-api-commons.yaml#/components/parameters/user_id"    
+    get:
+      tags:
+        - user
+      summary: Retrieve a user.
+      description: Retrieve the user with the provided id.
+      operationId: readUser
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/hal+json:
+              schema:
+                $ref: 'govhub-api-commons.yaml#/components/schemas/User'          
+        '400':
+          $ref: "govhub-api-commons.yaml#/components/responses/400BadRequest"
+        '401':
+          $ref: "govhub-api-commons.yaml#/components/responses/401Unauthorized"
+        '403':
+          $ref: "govhub-api-commons.yaml#/components/responses/403Forbidden"
+        '404':
+          $ref: "govhub-api-commons.yaml#/components/responses/404NotFound"
+        '429':
+          $ref: "govhub-api-commons.yaml#/components/responses/429TooManyRequests"
+        '503':
+          $ref: "govhub-api-commons.yaml#/components/responses/503ServiceUnavailable"
+        default:
+          $ref: "govhub-api-commons.yaml#/components/responses/ResponseDefault"                         
+  
+components:
+
+   parameters:
+   
+    expiration_file_embeds:
+      name: embed
+      in: query
+      description: Govio Planner File ID that originated the govio files
+      required: false
+      schema:
+          type: array
+          minLength:  0
+          maxLength: 1024
+          items:
+             $ref: "#/components/schemas/ExpirationFileEmbeds"
+   
+   
+    expiration_file_id:
+      name: id
+      in: path
+      description: Govio Planner File ID that originated the govio files
+      required: true
+      schema:
+            $ref: "#/components/schemas/ExpirationFileId"       
+   
+    expiration_file_id_query:
+      name: expiration_file_id
+      in: query
+      description: Govio Planner File ID that originated the govio files
+      required: false
+      schema:
+            $ref: "#/components/schemas/ExpirationFileId"
+            
+    csv_for_govio_file_id:
+      name: id
+      in: path
+      description: ID of the csv file produced by the expiration batch.
+      required: true
+      schema:
+            $ref: "#/components/schemas/GovioFileId"                     
+
+    plan_id:
+      name: plan_id
+      in: query
+      description: Govio Plan ID, not utilized.
+      required: false
+      schema:
+            $ref: "#/components/schemas/PlanId"        
+                
+   schemas:
+   
+      ExpirationFile:
+         type: object
+         additionalProperties: false
+         required:
+            - id
+            - creation_date
+            - filename
+            - plan_id
+         properties:
+            id:
+               $ref: "#/components/schemas/ExpirationFileId"
+            uploader_id:
+               $ref: "govhub-api-commons.yaml#/components/schemas/UserId"
+            plan_id: 
+               $ref: "#/components/schemas/PlanId"
+            filename:
+               $ref: "govio-api-backoffice.yaml#/components/schemas/FileName"
+            creation_date:
+               type: string
+               format: date-time
+            processing_date:
+               type: string
+               format: date-time               
+            _links:
+                 type: object
+                 additionalProperties: false
+                 properties:
+                    self:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                    content:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                    uploader:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"                       
+                 example:
+                    self:
+                       href: "https://govhub.it/govio-planner/expiration-files/1"
+                    content:
+                       href: "https://govhub.it/govio-planner/expiration-files/1/content"
+                    uploader:
+                       href: "https://govhub.it/govio-planner/users/1"                       
+            _embedded:
+              type: object
+              additionalProperties: false
+              properties:
+                uploader:
+                  $ref: "govhub-api-commons.yaml#/components/schemas/User"
+                  
+      ExpirationFileList:
+         allOf:
+            - $ref: "govhub-api-commons.yaml#/components/schemas/List"
+            - type: object
+              additionalProperties: false
+              properties:              
+                 items:
+                    type: array
+                    items:
+                       $ref: "#/components/schemas/ExpirationFile"
+                    minItems: 0
+                    maxItems: 2147483647
+              required:
+                 - items 
+
+      GovioFile:
+         type: object
+         additionalProperties: false
+         required:
+            - id
+            - creation_date
+            - message_count
+            - status
+            - filename
+         properties:
+            id:
+               $ref: "#/components/schemas/GovioFileId"
+            creation_date:
+               type: string
+               format: date-time
+            message_count:
+              type: integer
+              format: int64
+              minimum: 0
+              maximum: 9223372036854775807
+            status:
+              $ref: "#/components/schemas/GovioFileStatus"
+            expiration_file_id:
+              $ref: "#/components/schemas/ExpirationFileId"
+            filename:
+               $ref: "govio-api-backoffice.yaml#/components/schemas/FileName"
+            _links:
+                 type: object
+                 additionalProperties: false
+                 properties:
+                    self:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                    content:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                    expiration-file:
+                      $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                 example:
+                    self:
+                       href: "https://govhub.it/govio-planner/govio-files/1"
+                    content:
+                       href: "https://govhub.it/govio-planner/govio-files/1/content"
+                    expiration-file:
+                       href: "https://govhub.it/govio-planner/expiration-files/1"                       
+
+      GovioFileId:
+         type: integer
+         format: int64
+         minimum: 0
+         maximum: 9223372036854775807
+         example: 1
+         description: Govio File identifier.                         
+              
+      GovioFileList:
+         allOf:
+            - $ref: "govhub-api-commons.yaml#/components/schemas/List"
+            - type: object
+              additionalProperties: false
+              properties:              
+                 items:
+                    type: array
+                    items:
+                       $ref: "#/components/schemas/GovioFile"
+                    minItems: 0
+                    maxItems: 2147483647
+              required:
+                 - items 
+              
+      GovioFileStatus:
+        type: string
+        enum:
+          - created
+          - sent
+          - throttled                  
+                  
+      ExpirationFileEmbeds:
+        type: string
+        enum:
+          - uploader
+
+      ExpirationFileId:
+         type: integer
+         format: int64
+         minimum: 0
+         maximum: 9223372036854775807
+         example: 1
+         description: Expiration File identifier.               
+               
+      PlanId:
+         type: string
+         format: string
+         maxLength: 512
+         pattern: .+
+         description: Plan Iidentifier, not used at the moment.               
+               
+               
+               
+               
+               
+               
+               
+               
+               
+               
+            
+               

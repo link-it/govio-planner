@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.7.1</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+
+	<groupId>it.govhub.govio.planner</groupId>
+	<artifactId>planner</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>GovIO-Planner</name>
+	<properties>
+		<commons-configuration2.version>2.8.0</commons-configuration2.version>
+		<commons-io.version>2.11.0</commons-io.version>
+		<commons-fileupload.version>1.4</commons-fileupload.version>
+		<exec.maven.plugin.versione>1.6.0</exec.maven.plugin.versione>
+		<glassfish.version>1.1.4</glassfish.version>
+		<govregistry.version>0.1.0-SNAPSHOT</govregistry.version>
+		<jackson.databind.nullable.version>0.2.1</jackson.databind.nullable.version>
+		<jacoco.version>0.8.8</jacoco.version>
+		<java.version>11</java.version>
+		<javax.annotation.version>1.3.2</javax.annotation.version>
+		<jsonpatch.version>1.13</jsonpatch.version>
+		<jsr305.version>3.0.2</jsr305.version>
+		<maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
+		<maven.install.plugin.version>2.5.2</maven.install.plugin.version>
+		<maven-processor.version>4.5</maven-processor.version>
+		<openapi.tool.codegen.version>6.2.1</openapi.tool.codegen.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/../report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<springdoc.version>1.6.4</springdoc.version>
+		<swagger-annotations.version>1.6.2</swagger-annotations.version>
+		<swagger.version>2.1.2</swagger.version>
+		<version.hibernate-jpamodelgen>6.0.0.Alpha2</version.hibernate-jpamodelgen>
+		<wagon-ssh-external.version>1.0-beta-6</wagon-ssh-external.version>
+	</properties>
+	
+	<modules>
+		<module>batch</module>
+		<module>api</module>
+		<module>report</module>
+	</modules>
+
+	<distributionManagement>
+		<repository>
+			<id>link-repository</id>
+			<name>Linkit Private Repository</name>
+			<url>scpexe://poli-dev.link.it/opt/local/maven/private</url>
+		</repository>
+		<snapshotRepository>
+			<id>link-repository</id>
+			<name>Linkit Private Snapshots Repository</name>
+			<url>scpexe://poli-dev.link.it/opt/local/maven/private-snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<build>
+		<extensions>
+			<!-- Enabling the use of SSH -->
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh-external</artifactId>
+				<version>${wagon-ssh-external.version}</version>
+			</extension>
+		</extensions>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>linkit-private</id>
+			<url>https://maven.link.it/content/repositories/private/</url>
+		</repository>
+		<repository>
+			<id>linkit-private-snapshot</id>
+			<url>https://maven.link.it/content/repositories/private-snapshots/</url>
+		</repository>
+	</repositories>
+
+</project>
+
