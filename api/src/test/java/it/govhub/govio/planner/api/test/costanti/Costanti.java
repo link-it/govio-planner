@@ -15,6 +15,7 @@ public class Costanti {
 	public static final String PARAMETRO_SERVICE_ID = "service_id";
 	public static final String PARAMETRO_ORGANIZATION_ID = "organization_id";
 	public static final String PARAMETRO_SERVICE_INSTANCE_ID = "service_instance";
+	public static final String PARAMETRO_PLAN_ID = "plan_id";
 	public static final String TEXT_CSV_CONTENT_TYPE = "text/csv";
 	
 	public static final String TAX_CODE_ENTE_CREDITORE = "12345678901";
@@ -69,6 +70,7 @@ public class Costanti {
 	public static final String TEMPLATE_CIE_SUBJECT = "Scadenza CIE n. ${cie}";
 	public static final String TEMPLATE_CIE_MESSAGE_BODY = "Salve, con la presente la informiamo che in data ${due_date} scadrà la Carta di Identità elettronica numero ${cie}. Per maggiori informazioni sulle modalità di rinnovo può consultare https://comune.dimostrativo.it.";
 	
+	public static final String PARAMETRO_PLAN_ID_BARI_CIE_EXP = "bari-cie-exp";
 	
 	
 	/* ORGANIZATIONS */
