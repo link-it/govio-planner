@@ -31,18 +31,13 @@
 			<artifactId>jacoco-maven-plugin</artifactId>
 			<version>${jacoco.version}</version>
 		</dependency>
-                <dependency>
-                        <groupId>it.govhub.govio</groupId>
-                        <artifactId>template-utils</artifactId>
-                        <version>${project.version}</version>
-                </dependency>
 		<dependency>
-			<groupId>it.govhub.govio</groupId>
-			<artifactId>msg-batch</artifactId>
+			<groupId>it.govhub.govio.planner</groupId>
+			<artifactId>batch</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>it.govhub.govio</groupId>
+			<groupId>it.govhub.govio.planner</groupId>
 			<artifactId>api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
