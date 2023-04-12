@@ -47,13 +47,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>it.govhub.govio</groupId>
-			<artifactId>api</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		
-			<dependency>
 			<groupId>it.govhub.govregistry</groupId>
 			<artifactId>commons</artifactId>
 			<version>${govregistry.version}</version>
@@ -213,7 +206,7 @@
 						<configuration>
 							<type>jar</type>
 							<includeArtifactIds>commons,api</includeArtifactIds>
-							<includes>govhub-api-commons.yaml,BOOT-INF/classes/static/govio-api-backoffice.yaml</includes>
+							<includes>govhub-api-commons.yaml</includes>
 							<outputDirectory>${project.basedir}/src/main/resources/static</outputDirectory>
 							<fileMappers>
 								<fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FlattenFileMapper"/>
