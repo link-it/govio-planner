@@ -7,7 +7,7 @@
 
 	<parent>
 		<groupId>it.govhub.govio.planner</groupId>
-		<artifactId>planner</artifactId>
+		<artifactId>bom</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 
