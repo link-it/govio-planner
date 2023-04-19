@@ -26,7 +26,7 @@ public class GovioPlannerFileAssembler extends RepresentationModelAssemblerSuppo
 		
 		BeanUtils.copyProperties(src, ret);
 		ret.setExpirationFileId(src.getExpirationFile().getId());
-		
+		ret.setFilename(src.getName());
 		ret.add(
 				linkTo(
 					methodOn(FileController.class).readGovioFileInfo(src.getId()))
