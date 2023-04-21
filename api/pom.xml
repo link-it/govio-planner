@@ -7,7 +7,7 @@
 
 	<parent>
 		<groupId>it.govhub.govio.planner</groupId>
-		<artifactId>planner</artifactId>
+		<artifactId>bom</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 
@@ -44,23 +44,6 @@
 
 	<dependencies>
 
-<!--		
-		<dependency>
-			<groupId>it.govhub.govregistry</groupId>
-			<artifactId>readops</artifactId>
-			<version>${govregistry.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>it.govhub.govio</groupId>
-			<artifactId>template-utils</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		
-
--->
-
-
 		<!-- 
 		Dipendiamo da commons e govio per gli yaml delle OpenAPI, infatti
 		la dipendenza  è con scope "compile"" 
@@ -72,9 +55,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>it.govhub.govio</groupId>
-			<artifactId>api</artifactId>
-			<version>${project.version}</version>
+			<groupId>it.govhub.govregistry</groupId>
+			<artifactId>readops</artifactId>
+			<version>${govregistry.version}</version>
 		</dependency>
 
 		<dependency>
@@ -227,6 +210,7 @@
 			<version>${commons-fileupload.version}</version>
 		</dependency>
 
+		<!-- Generatore  OpenAPI Custom per govway -->
 		<dependency>
 			<groupId>it.govhub</groupId>
 			<artifactId>govhub-openapi-codegen</artifactId>
@@ -236,7 +220,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>govio-planner-api</finalName>
+		<finalName>govio-planner</finalName>
 		
 		<plugins>
 			<plugin>
@@ -257,7 +241,7 @@
 						<configuration>
 							<type>jar</type>
 							<includeArtifactIds>commons,api</includeArtifactIds>
-							<includes>govhub-api-commons.yaml,BOOT-INF/classes/static/govio-api-backoffice.yaml</includes>
+							<includes>govhub-api-commons.yaml</includes>
 							<outputDirectory>${project.basedir}/src/main/resources/static</outputDirectory>
 							<fileMappers>
 								<fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FlattenFileMapper"/>
@@ -279,9 +263,23 @@
 						<id>generate-sources-openapi</id>
 						<phase>generate-sources</phase>
 						<configuration>
-							<ignoreFileOverride>${project.basedir}/.openapi-generator-ignore</ignoreFileOverride>
 							<inputSpec>${project.basedir}/src/main/resources/static/govio-planner-api-backoffice.yaml</inputSpec>
 							<generatorName>govhub-codegen</generatorName>
+							<importMappings>
+								<!-- IMPORT MAPPINGS DI GOVHUB-COMMONS -->
+								<importMapping>Direction=org.springframework.data.domain.Sort.Direction</importMapping>
+								<importMapping>PageInfo=it.govhub.govregistry.commons.api.beans.PageInfo</importMapping>
+								<importMapping>Problem=it.govhub.govregistry.commons.api.beans.Problem</importMapping>
+								<importMapping>PatchOp=it.govhub.govregistry.commons.api.beans.PatchOp</importMapping>
+								<importMapping>Authorization=it.govhub.govregistry.commons.api.beans.Authorization</importMapping>
+								<importMapping>AuthorizationList=it.govhub.govregistry.commons.api.beans.AuthorizationList</importMapping>
+								<importMapping>AuthorizationOrdering=it.govhub.govregistry.commons.api.beans.AuthorizationOrdering</importMapping>
+								<importMapping>User=it.govhub.govregistry.commons.api.beans.User</importMapping>
+								<importMapping>UserCreate=it.govhub.govregistry.commons.api.beans.UserCreate</importMapping>
+							</importMappings>
+							<schemaMappings>
+								<schemaMapping>GovioFileStatus=it.govhub.govio.planner.api.entity.GovioPlannerFileEntity.Status</schemaMapping>
+							</schemaMappings>
 							<configOptions>
 								<dateLibrary>java8</dateLibrary>
 								<library>spring-boot</library>
@@ -293,10 +291,6 @@
 								<skipDefaultInterface>true</skipDefaultInterface>
 								<interfaceOnly>true</interfaceOnly>
 								<hateoas>true</hateoas>
-								<!-- Metto il booleanGetterPrefix a get, e.g.: getEnabled invece 
-									di isEnabled. questo in modo da far riconoscere e copiare le proprietà booleane 
-									alla BeanUtils.copyProperties -->
-								<booleanGetterPrefix>get</booleanGetterPrefix>
 								<useTags>true</useTags>
 							</configOptions>
 							<output>${project.basedir}/target</output>
@@ -318,6 +312,7 @@
 			</plugin>
 
 
+			<!-- Genera il metamodel JPA -->		
 			<plugin>
 				<groupId>org.bsc.maven</groupId>
 				<artifactId>maven-processor-plugin</artifactId>
@@ -345,7 +340,7 @@
 				</dependencies>
 			</plugin>
 
-
+			<!-- Code Coverage Plugin -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
