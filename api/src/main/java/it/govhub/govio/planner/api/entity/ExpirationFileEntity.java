@@ -28,6 +28,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Riferisce Un file CSV contente le scadenze delle carte di identità.
+ *
+ */
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -35,7 +40,7 @@ import lombok.ToString;
 @ToString
 @Entity
 @Table(name = "govio_planner_files")
-public class ExpirationCIEFileEntity {
+public class ExpirationFileEntity {
 	
 	public enum Status {CREATED, PROCESSING, PROCESSED}
 	
@@ -65,11 +70,14 @@ public class ExpirationCIEFileEntity {
 	@Enumerated(EnumType.STRING)
 	private Status status;
 	
-	@Column(name = "size")
+	@Column(name = "plan_id", nullable = false, length = 512)
+	private String planId;
+	
+	@Column(name = "size", nullable = false)
 	private Long size;
 
 	@OneToMany(mappedBy = "expirationFile")
 	@Builder.Default
-	private Set<GovioFileProducedEntity> govioFiles = new HashSet<>();
+	private Set<GovioPlannerFileEntity> govioFiles = new HashSet<>();
 
 }
