@@ -12,6 +12,7 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import it.govhub.govio.planner.batch.entity.ExpirationCIEFileEntity;
 import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity;
@@ -20,6 +21,10 @@ import it.govhub.govio.planner.batch.repository.ExpirationCIEFileRepository;
 import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 
 public class NotifyRecordWriterTasklet implements Tasklet {
+	@Value("${planner.ntfy.csv-dir}")
+	private String notifyFile;
+
+	
 	@Autowired
 	GovioFileProducedRepository govioFileProducedRepository;
 	
@@ -35,7 +40,7 @@ public class NotifyRecordWriterTasklet implements Tasklet {
 
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-			String file = "CIE_EXPIRATION_"+LocalDate.now()+".csv";
+			String file = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
 			FileWriter myWriter;
 			try {
 				myWriter = new FileWriter(file);
