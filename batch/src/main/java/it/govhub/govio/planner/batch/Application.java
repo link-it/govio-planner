@@ -1,6 +1,5 @@
 package it.govhub.govio.planner.batch;
 
-import java.sql.Date;
 import java.time.LocalDate;
 
 import org.springframework.batch.core.Job;
@@ -30,7 +29,7 @@ public class Application extends SpringBootServletInitializer {
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
-	@Scheduled(cron = "0 12 00 * * ?", zone = "Europe/Berlin")
+	@Scheduled(cron = "0 0 */1 * * *", zone = "Europe/Berlin")
 	public void lookForExpiringJob() throws Exception {
 		JobParameters params = new JobParametersBuilder()
 				.addString("GovioPlannerJobID", LocalDate.now().toString())
