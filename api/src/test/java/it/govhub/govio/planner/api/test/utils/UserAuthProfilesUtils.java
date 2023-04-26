@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
+import it.govhub.security.beans.GovhubPrincipal;
 import it.govhub.security.services.GovhubUserDetailService;
 
 @Component
@@ -37,4 +38,7 @@ public class UserAuthProfilesUtils {
 		return user(this.userDetailService.loadUserByUsername(principal));
 	}
 
+	public Long getIdUtenzaPrincipal(String principal) {
+		return ((GovhubPrincipal) this.userDetailService.loadUserByUsername(principal)).getUser().getId();
+	}
 }

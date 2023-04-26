@@ -56,19 +56,11 @@ import it.govhub.govregistry.commons.utils.LimitOffsetPageRequest;
 import it.govhub.govregistry.commons.utils.ListaUtils;
 import it.govhub.govregistry.commons.utils.RequestUtils;
 import it.govhub.security.services.SecurityService;
+import java.util.HashSet;
+
 
 @V1RestController
 public class FileController implements FileApi {
-	
-	// Questo deve far parte del contesto ed essere caricato dall'applicazione all'avvio?
-	@Value("${govio-planner.organization}")
-	String organizationTaxCode;
-	
-	@Value("${govio-planner.service-instance}")
-	Long serviceInstanceId;
-	
-	@Value("${govio-planner.expiration-basis}")
-	List<Long> cadenzaSpedizione;
 
 	@Autowired
 	SecurityService authService;
@@ -187,7 +179,8 @@ public class FileController implements FileApi {
 	
 
 	@Override
-	public ResponseEntity<ExpirationFileList> listExpirationFiles(Direction sortDirection, Integer limit,	Long offset,String q, List<ExpirationFileEmbeds> embed) {
+	public ResponseEntity<ExpirationFileList> listExpirationFiles(Direction sortDirection, Integer limit, Long offset,String q, List<ExpirationFileEmbeds> embed) {
+		embed = ListaUtils.emptyIfNull(embed);
 
 		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_OPERATOR);
 
@@ -195,7 +188,7 @@ public class FileController implements FileApi {
 		
 		var spec = ExpirationFileFilters.empty();
 		if (!StringUtils.isBlank(q) ) {
-			spec = ExpirationFileFilters.byName("").or(ExpirationFileFilters.byGovioFilename(""));
+			spec = ExpirationFileFilters.byName(q).or(ExpirationFileFilters.byGovioFilename(q));
 		}
 		Page<ExpirationFileEntity> files = this.expirationsFileRepo.findAll(spec, pageRequest.pageable);
 		
@@ -205,7 +198,7 @@ public class FileController implements FileApi {
 		ExpirationFileList ret = ListaUtils.buildPaginatedList(files, pageRequest.limit, curRequest, new ExpirationFileList());
 		
 		for (ExpirationFileEntity file : files) {
-			ret.addItemsItem(this.fileAssembler.toModel(file));
+			ret.addItemsItem(this.fileAssembler.toEmbeddedModel(file, new HashSet<>(embed)));
 		}
 		
 		return ResponseEntity.ok(ret);
@@ -219,16 +212,13 @@ public class FileController implements FileApi {
 
 		var file = this.govioFileRepo.findById(id)
 				.orElseThrow( () -> new ResourceNotFoundException(this.plannerFileMessages.idNotFound(id)));
-		
 		Path path = file.getLocation();
-		
 		FileInputStream stream;
 		try {
 			stream = new FileInputStream(path.toFile());
 		} catch (FileNotFoundException e) {
 			throw new InternalException(e);
 		}
-
 		InputStreamResource fileStream = new InputStreamResource(stream);
 		
 		HttpHeaders headers = new HttpHeaders();
@@ -239,18 +229,23 @@ public class FileController implements FileApi {
 
 	@Override
 	public ResponseEntity<GovioFileList> listGovioFiles(Direction sortDirection, Integer limit, Long offset, String q, Long expirationFileId) {
-		
+
 		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_OPERATOR);
 
 		LimitOffsetPageRequest pageRequest = new LimitOffsetPageRequest(offset, limit,Sort.by(sortDirection, GovioPlannerFileEntity_.CREATION_DATE));
+		var spec = GovioPlannerFileFilters.empty();
+		if (! StringUtils.isBlank(q)) {
+			spec = GovioPlannerFileFilters.likeGovioFilename(q).or(GovioPlannerFileFilters.likeExpirationFilename(q));
+		}
+		if (expirationFileId != null) {
+			spec = spec.and(GovioPlannerFileFilters.byExpirationFileId(expirationFileId));
+		}
 		
-		Page<GovioPlannerFileEntity> files = this.govioFileRepo.findAll(GovioPlannerFileFilters .empty(), pageRequest.pageable);
+		Page<GovioPlannerFileEntity> files = this.govioFileRepo.findAll(spec, pageRequest.pageable);
 		
 		HttpServletRequest curRequest = ((ServletRequestAttributes) RequestContextHolder
 				.currentRequestAttributes()).getRequest();
-		
 		GovioFileList ret = ListaUtils.buildPaginatedList(files, pageRequest.limit, curRequest, new GovioFileList());
-		
 		for (var file : files) {
 			ret.addItemsItem(this.govioFileAssembler.toModel(file));
 		}
@@ -261,11 +256,12 @@ public class FileController implements FileApi {
 
 	@Override
 	public ResponseEntity<GovioFile> readGovioFileInfo(Long id) {
+		
 		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_OPERATOR);
 		
 		var file = this.govioFileRepo.findById(id)
 				.orElseThrow( () -> new ResourceNotFoundException(this.fileMessages.idNotFound(id)));
-
+		
 		return ResponseEntity.ok(this.govioFileAssembler.toModel(file));
 	}
 
