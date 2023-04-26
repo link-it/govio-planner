@@ -36,6 +36,8 @@ public class NotifyItemWriter implements ItemWriter<CSVExpiration> {
 		      }
 	    }catch (IOException e) {
 			logger.error("Ricevuta IOException durante la scrittura del file {}",file);
+			throw new IOException("Ricevuta IOException durante la scrittura del file di notifiche");
+
 	      }
 	    }
 }
