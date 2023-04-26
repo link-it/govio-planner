@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.ByteArrayInputStream;
-import java.time.format.DateTimeFormatter;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -55,7 +54,7 @@ class Files_UC_1_UploadExpirationFileTest {
 	@Autowired
 	ExpirationFileEntityRepository fileRepository;
 
-	private DateTimeFormatter dt = DateTimeFormatter.ISO_DATE_TIME;
+//	private DateTimeFormatter dt = DateTimeFormatter.ISO_DATE_TIME;
 
 	@Value("${govio-planner.time-zone:Europe/Rome}")
 	private String timeZone;
