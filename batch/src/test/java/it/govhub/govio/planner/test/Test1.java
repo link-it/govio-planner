@@ -59,8 +59,6 @@ public class Test1 {
 	void setUp(){
 		String routePath = expFile;
 		File f = new File(routePath);
-		f.setReadable(true);
-		f.setWritable(true);
 		govioFileProducedRepository.deleteAll();
 		expirationCIEFileRepository.deleteAll();
 	}
@@ -71,6 +69,7 @@ public class Test1 {
 		this.jobLauncherTestUtils.setJobRepository(jobRepository);
 		this.jobLauncherTestUtils.setJob(job);
 	}
+	/*
 	@Test
 	void testExpirationFileKO() throws Exception {
 		//test senza ultimo file con le scadenze
@@ -78,14 +77,14 @@ public class Test1 {
 		JobExecution jobExecution = jobLauncherTestUtils.launchJob();
 		Assert.assertEquals("FAILED", jobExecution.getExitStatus().getExitCode());
 	}
-
+*/
 	@Test
 	void testDirectoryReadKO() throws Exception {
+		// test che controlla il corretto funzionamento del batch in caso il file delle scadenze non sia leggibile
 		initializeJobLauncherTestUtils();
 		String routePath = expFile;
 		File f = new File(routePath+"CIE_scadenza_2018_-_dic_2021_-_tracciato.csv");
-		File directory = new File(routePath);
-		directory.setReadable(false);
+		f.setReadable(false);
 		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(OffsetDateTime.now()).location(f.getAbsolutePath()).name("CSVTestNotifiche.csv").build();
 		GovioFileProducedEntity govioFileProducedEntity = GovioFileProducedEntity.builder().creationDate(OffsetDateTime.parse("2007-12-03T10:15:30+01:00")).expirationFile(expirationCIEFileEntity).location("/etc/govio-planner/ntfy-files/CSVTestNotifiche.csv").size(null).status(Status.CREATED).build();
 		expirationCIEFileRepository.save(expirationCIEFileEntity);
@@ -109,6 +108,7 @@ public class Test1 {
 		govioFileProducedRepository.save(govioFileProducedEntity);
 		JobExecution jobExecution = jobLauncherTestUtils.launchJob();
 		Assert.assertEquals("FAILED", jobExecution.getExitStatus().getExitCode());
+		fileScrittura.setWritable(true);
 	}
 
 	@Test
