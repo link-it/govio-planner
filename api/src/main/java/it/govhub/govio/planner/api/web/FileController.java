@@ -61,16 +61,6 @@ import java.util.HashSet;
 
 @V1RestController
 public class FileController implements FileApi {
-	
-	// Questo deve far parte del contesto ed essere caricato dall'applicazione all'avvio?
-	@Value("${govio-planner.organization}")
-	String organizationTaxCode;
-	
-	@Value("${govio-planner.service-instance}")
-	Long serviceInstanceId;
-	
-	@Value("${govio-planner.expiration-basis}")
-	List<Long> cadenzaSpedizione;
 
 	@Autowired
 	SecurityService authService;
