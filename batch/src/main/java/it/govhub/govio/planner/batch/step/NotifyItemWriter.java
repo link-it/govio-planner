@@ -1,5 +1,6 @@
 package it.govhub.govio.planner.batch.step;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -25,8 +26,10 @@ public class NotifyItemWriter implements ItemWriter<CSVExpiration> {
 	@Override
 	public void write(List<? extends CSVExpiration> items) throws Exception {
     	String file = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
+        File myObj = new File(file);
+        myObj.createNewFile();
 	    try {
-	        FileWriter myWriter = new FileWriter(file);
+	        FileWriter myWriter = new FileWriter(myObj);
 			for (int i = 0; i<items.size(); i++) {
 				CSVExpiration exp = items.get(i);
 				myWriter.write(exp.getTaxCode()+";"+exp.getExpeditionDate()+";"+exp.getDueDate()+";"+exp.getDueDate()+";"+exp.getFullName()+";"+exp.getIdentityCardNumber()+";"+exp.getReleaseDate()+";"+exp.getForewarning()+'\n');

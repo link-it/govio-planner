@@ -40,6 +40,7 @@ public class NotifyRecordWriterTasklet implements Tasklet {
 
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+		// TODO: Exception si può togliere ?
 			String file = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
 			FileWriter myWriter;
 			try {
@@ -51,6 +52,7 @@ public class NotifyRecordWriterTasklet implements Tasklet {
 				govioFileProducedRepository.save(e);
 			} catch (IOException e1) {
 				logger.error("Ricevuta IOException durante la chiusura del file {}",file);
+				throw new Exception("Ricevuta IOException durante la chiusura del file delle scadenze");
 			}
 		return null;
 	}

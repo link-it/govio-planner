@@ -33,9 +33,9 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 	public NotifyItemProcessor(String dataUltimaNotifica){
 		this.dataUltimaNotifica = dataUltimaNotifica;
 	}
+	
 	@Override
 	public CSVExpiration process(CSVItem item) throws Exception {
-		// prende solo la data
 		dataUltimaNotifica = StringUtils.substringBefore(dataUltimaNotifica, 'T');
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(formatLastNotify);
 		LocalDate lastMessage = LocalDate.parse(dataUltimaNotifica, formatter);
@@ -44,7 +44,7 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 		LocalDate dueDate = LocalDate.parse(item.getDueDate(),formatter);
 
 		String[] splits = policy.split(",");
-		for (int i = 0; i<splits.length; i++) {
+		for (int i = splits.length-1; i>0; i--) {
 			CSVExpiration res = compareDates(lastMessage, dueDate, Integer.valueOf(splits[i]),item);
 			if (res != null) return res;
 		  }
