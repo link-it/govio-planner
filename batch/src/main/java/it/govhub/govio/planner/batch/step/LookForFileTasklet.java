@@ -1,5 +1,8 @@
 package it.govhub.govio.planner.batch.step;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
@@ -25,7 +28,13 @@ public class LookForFileTasklet implements Tasklet {
 		// TODO Auto-generated method stub
 		ExpirationCIEFileEntity expFile = expirationCIEFileRepository.lastExpirationFile();
 		if (expFile == null) {
-			logger.error("Il file delle notifiche è assente");
+			logger.error("Il tracciato delle notifiche è assente");
+			throw new IOException("Il tracciato delle notifiche è assente");
+		}
+		File exp = new File(expFile.getLocation());
+		if (!exp.canRead())  {
+			logger.error("Il tracciato delle notifiche non è leggibile");
+			throw new IOException("Il tracciato delle notifiche non è leggibile");
 		}
 		ExecutionContext jobExecutionContext = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
 		jobExecutionContext.put("idExp", ((expFile==null)? null: expFile.getId()));

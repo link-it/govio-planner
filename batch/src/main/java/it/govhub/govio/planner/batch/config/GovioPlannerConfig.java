@@ -54,7 +54,6 @@ public class GovioPlannerConfig {
 	@StepScope
 	@Qualifier("notifyItemReader")
 	public ItemStreamReader<CSVItem> notifyItemReader(@Value("#{jobExecutionContext[location]}") String filename) {
-		// TODO: gestire il caso di errore -> Se non c'è nessun file, il batch si ferma
 		FlatFileItemReader<CSVItem> itemReader = new FlatFileItemReader<CSVItem>();
 		  //Set input file location
 		itemReader.setResource(new FileSystemResource(filename));
