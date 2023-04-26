@@ -261,7 +261,7 @@ class Files_UC_2_FindExpirationFilesTest {
 	@Test
 	void UC_2_08_FindAllOk_EmbedUploader() throws Exception {
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-		params.add(Costanti.USERS_QUERY_PARAM_STATUS, ExpirationFileEmbeds.UPLOADER.toString());
+		params.add(Costanti.USERS_QUERY_PARAM_EMBED, ExpirationFileEmbeds.UPLOADER.toString());
 
 		MvcResult result = this.mockMvc.perform(get(EXPIRATION_FILES_BASE_PATH).params(params)
 				.with(this.userAuthProfilesUtils.utenzaAdmin())
