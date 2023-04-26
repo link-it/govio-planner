@@ -14,11 +14,11 @@ public class GovioPlannerConfig  implements ApplicationConfig {
 	private String applicationId;
 	
 	public static final Set<String> DEFAULT_READ_ORGANIZATION_ROLES = Set.of(
-				GovioPlannerRoles.GOVIOPLANNER_OPERATOR
+				GovioPlannerRoles.GOVIOPLANNER_ADMIN
 			);
 	
 	public static final Set<String> DEFAULT_READ_SERVICE_ROLES = Set.of(
-			GovioPlannerRoles.GOVIOPLANNER_OPERATOR
+			GovioPlannerRoles.GOVIOPLANNER_ADMIN
 			);
 
 	

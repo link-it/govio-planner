@@ -95,7 +95,7 @@ public class FileController implements FileApi {
 		// Potrei fare una whitelist ora...
 		planId = "bari-cie-exp";
 		
-		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_OPERATOR);
+		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_ADMIN);
 		
 		HttpServletRequest request = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
 		
@@ -143,7 +143,7 @@ public class FileController implements FileApi {
 	@Override
 	public ResponseEntity<Resource> downloadExpirationsFile(Long expirationFileId) {
 		
-		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_OPERATOR);
+		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_ADMIN);
 
 		ExpirationFileEntity file = this.expirationsFileRepo.findById(expirationFileId)
 				.orElseThrow( () -> new ResourceNotFoundException(this.fileMessages.idNotFound(expirationFileId)));
@@ -169,7 +169,7 @@ public class FileController implements FileApi {
 	@Override
 	public ResponseEntity<ExpirationFile> readExpirationsInfo(Long expirationFileId) {
 		
-		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_OPERATOR);
+		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_ADMIN);
 		
 		ExpirationFileEntity file = this.expirationsFileRepo.findById(expirationFileId)
 				.orElseThrow( () -> new ResourceNotFoundException(this.fileMessages.idNotFound(expirationFileId)));
@@ -182,7 +182,7 @@ public class FileController implements FileApi {
 	public ResponseEntity<ExpirationFileList> listExpirationFiles(Direction sortDirection, Integer limit, Long offset,String q, List<ExpirationFileEmbeds> embed) {
 		embed = ListaUtils.emptyIfNull(embed);
 
-		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_OPERATOR);
+		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_ADMIN);
 
 		LimitOffsetPageRequest pageRequest = new LimitOffsetPageRequest(offset, limit,Sort.by(sortDirection, ExpirationFileEntity_.CREATION_DATE));
 		
@@ -208,7 +208,7 @@ public class FileController implements FileApi {
 	@Override
 	public ResponseEntity<Resource> downloadGovioFile(Long id) {
 		
-		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_OPERATOR);
+		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_ADMIN);
 
 		var file = this.govioFileRepo.findById(id)
 				.orElseThrow( () -> new ResourceNotFoundException(this.plannerFileMessages.idNotFound(id)));
@@ -230,7 +230,7 @@ public class FileController implements FileApi {
 	@Override
 	public ResponseEntity<GovioFileList> listGovioFiles(Direction sortDirection, Integer limit, Long offset, String q, Long expirationFileId) {
 
-		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_OPERATOR);
+		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_ADMIN);
 
 		LimitOffsetPageRequest pageRequest = new LimitOffsetPageRequest(offset, limit,Sort.by(sortDirection, GovioPlannerFileEntity_.CREATION_DATE));
 		var spec = GovioPlannerFileFilters.empty();
@@ -257,7 +257,7 @@ public class FileController implements FileApi {
 	@Override
 	public ResponseEntity<GovioFile> readGovioFileInfo(Long id) {
 		
-		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_OPERATOR);
+		this.authService.expectAnyRole(GovioPlannerRoles.GOVIOPLANNER_ADMIN);
 		
 		var file = this.govioFileRepo.findById(id)
 				.orElseThrow( () -> new ResourceNotFoundException(this.fileMessages.idNotFound(id)));
