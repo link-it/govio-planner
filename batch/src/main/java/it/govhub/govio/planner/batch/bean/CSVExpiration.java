@@ -18,11 +18,11 @@ import lombok.ToString;
 @Getter
 @Setter
 public class CSVExpiration {
-	String taxCode;
-	LocalDateTime expeditionDate;
-	String dueDate;
-    String fullName;
-    String identityCardNumber;
-    String releaseDate;
-    int forewarning;
+	String tax_code;
+	String expedition_date;
+	String due_date;
+    String full_name;
+    String identity_card_number;
+    String release_date;
+    String forewarning;
 }

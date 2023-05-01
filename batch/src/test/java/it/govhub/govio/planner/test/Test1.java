@@ -57,8 +57,6 @@ public class Test1 {
 
 	@BeforeEach
 	void setUp(){
-		String routePath = expFile;
-		File f = new File(routePath);
 		govioFileProducedRepository.deleteAll();
 		expirationCIEFileRepository.deleteAll();
 	}
@@ -69,7 +67,7 @@ public class Test1 {
 		this.jobLauncherTestUtils.setJobRepository(jobRepository);
 		this.jobLauncherTestUtils.setJob(job);
 	}
-	/*
+	
 	@Test
 	void testExpirationFileKO() throws Exception {
 		//test senza ultimo file con le scadenze
@@ -77,28 +75,27 @@ public class Test1 {
 		JobExecution jobExecution = jobLauncherTestUtils.launchJob();
 		Assert.assertEquals("FAILED", jobExecution.getExitStatus().getExitCode());
 	}
-*/
+
 	@Test
 	void testDirectoryReadKO() throws Exception {
-		// test che controlla il corretto funzionamento del batch in caso il file delle scadenze non sia leggibile
+		// test che controlla il corretto funzionamento del batch in caso il file delle scadenze non sia presente
 		initializeJobLauncherTestUtils();
 		String routePath = expFile;
-		File f = new File(routePath+"CIE_scadenza_2018_-_dic_2021_-_tracciato.csv");
-		f.setReadable(false);
+		File f = new File(routePath+"file_assente.csv");
+		f.setReadable(false,false);
 		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(OffsetDateTime.now()).location(f.getAbsolutePath()).name("CSVTestNotifiche.csv").build();
 		GovioFileProducedEntity govioFileProducedEntity = GovioFileProducedEntity.builder().creationDate(OffsetDateTime.parse("2007-12-03T10:15:30+01:00")).expirationFile(expirationCIEFileEntity).location("/etc/govio-planner/ntfy-files/CSVTestNotifiche.csv").size(null).status(Status.CREATED).build();
 		expirationCIEFileRepository.save(expirationCIEFileEntity);
 		govioFileProducedRepository.save(govioFileProducedEntity);
 		JobExecution jobExecution = jobLauncherTestUtils.launchJob();
 		Assert.assertEquals("FAILED", jobExecution.getExitStatus().getExitCode());
-		f.setReadable(true);
 	}
-	
+
 	@Test
 	void testDirectoryWriteKO() throws Exception {
-		// test che controlla il corretto funzionamento del batch in caso il file prodotto sia in una cartella non scrivibile
+		// test che controlla il corretto funzionamento del batch in caso la cartella del file delle notifiche da produrre non esista
 		initializeJobLauncherTestUtils();
-		String routePath = expFile;
+		String routePath = "/directory/fake/";
 		File f = new File(routePath +"CIE_scadenza_2018_-_dic_2021_-_tracciato.csv");
 		File fileScrittura = new File(notifyFile);
 		fileScrittura.setReadOnly();
@@ -123,9 +120,9 @@ public class Test1 {
 		govioFileProducedRepository.save(govioFileProducedEntity);
 		JobExecution jobExecution = jobLauncherTestUtils.launchJob();
 		Assert.assertEquals("COMPLETED", jobExecution.getExitStatus().getExitCode());
-
+		// file delle notifiche creato in /test/resources 
 		String file = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
-		String expectedFilePath = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv"; // vedere come fare questo
+		String expectedFilePath = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
 		File createdFile = new File(file);
 		File expectedFile = new File(expectedFilePath);
 		createdFile.compareTo(expectedFile);
