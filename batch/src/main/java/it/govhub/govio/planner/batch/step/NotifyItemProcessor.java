@@ -60,7 +60,7 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 				&& 
 				(LocalDate.now().plusDays(days).compareTo(dueDate) >= 0)
 				)
-			return new CSVExpiration(item.getTaxCode(),expeditionDate,item.getDueDate(),item.getFullName(),item.getIdentityCardNumber(),item.getReleaseDate(),days);
+			return new CSVExpiration(item.getTaxCode(),expeditionDate.toString(),item.getDueDate(),item.getFullName(),item.getIdentityCardNumber(),item.getReleaseDate(),Integer.toString(days));
 		else return null;
 	}
 }

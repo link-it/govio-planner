@@ -32,9 +32,9 @@ public class LookForFileTasklet implements Tasklet {
 			throw new IOException("Il tracciato delle notifiche è assente");
 		}
 		File exp = new File(expFile.getLocation());
-		if (!exp.canRead())  {
-			logger.error("Il tracciato delle notifiche non è leggibile");
-			throw new IOException("Il tracciato delle notifiche non è leggibile");
+		if (expFile == null || !exp.canRead()) {
+			logger.error("Il tracciato delle notifiche è assente o non è leggibile");
+			throw new IOException("Il tracciato delle notifiche è assente o non è leggibile");
 		}
 		ExecutionContext jobExecutionContext = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
 		jobExecutionContext.put("idExp", ((expFile==null)? null: expFile.getId()));
