@@ -34,7 +34,9 @@ import org.springframework.util.MultiValueMap;
 import it.govhub.govio.planner.api.Application;
 import it.govhub.govio.planner.api.beans.ExpirationFileEmbeds;
 import it.govhub.govio.planner.api.entity.ExpirationFileEntity;
+import it.govhub.govio.planner.api.entity.GovioPlannerFileEntity;
 import it.govhub.govio.planner.api.repository.ExpirationFileEntityRepository;
+import it.govhub.govio.planner.api.repository.GovioPlannerFileEntityRepository;
 import it.govhub.govio.planner.api.test.costanti.Costanti;
 import it.govhub.govio.planner.api.test.utils.ExpirationFileUtils;
 import it.govhub.govio.planner.api.test.utils.UserAuthProfilesUtils;
@@ -55,7 +57,10 @@ class Files_UC_2_FindExpirationFilesTest {
 	Path fileRepositoryPath;
 
 	@Autowired
-	ExpirationFileEntityRepository fileRepository;
+	ExpirationFileEntityRepository expirationFileRepository;
+	
+	@Autowired
+	GovioPlannerFileEntityRepository govioFileRepository;
 
 	@Autowired
 	private GovhubUserDetailService userDetailService;
@@ -71,13 +76,20 @@ class Files_UC_2_FindExpirationFilesTest {
 
 	@BeforeEach
 	void setUp() throws Exception{
-		fileRepository.deleteAll();
+		govioFileRepository.deleteAll();
+		expirationFileRepository.deleteAll();
 
 		UserEntity user = ((GovhubPrincipal) this.userDetailService.loadUserByUsername("user_govio_sender")).getUser();
 
-		List<ExpirationFileEntity> files = new ArrayList<>();
-		files.add(fileRepository.save(ExpirationFileUtils.buildFile(this.fileRepositoryPath, "01", user, this.planId)));
-		files.add(fileRepository.save(ExpirationFileUtils.buildFile(this.fileRepositoryPath, "02", user, this.planId)));
+		ExpirationFileEntity expirationFileEntity1 = ExpirationFileUtils.buildFile(this.fileRepositoryPath, "01", user, this.planId);
+		expirationFileRepository.save(expirationFileEntity1);
+		ExpirationFileEntity expirationFileEntity2 = ExpirationFileUtils.buildFile(this.fileRepositoryPath, "02", user, this.planId);
+		expirationFileRepository.save(expirationFileEntity2);
+		
+//		GovioPlannerFileEntity govioFileEntity1 = ExpirationFileUtils.buildGovIOFile(this.fileRepositoryPath, "govio01", expirationFileEntity1);
+//		govioFileRepository.save(govioFileEntity1);
+//		GovioPlannerFileEntity govioFileEntity2 = ExpirationFileUtils.buildGovIOFile(this.fileRepositoryPath, "govio02", expirationFileEntity2);
+//		govioFileRepository.save(govioFileEntity2);
 	}
 
 	// 1. findAllOK senza filtri 
@@ -298,4 +310,33 @@ class Files_UC_2_FindExpirationFilesTest {
 		assertEquals("user_govio_sender", user.getString("principal"));
 	}
 
+	@Test
+	void UC_2_08_FindAllOk_Q() throws Exception {
+		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+		params.add(Costanti.USERS_QUERY_PARAM_Q, "02");
+
+		MvcResult result = this.mockMvc.perform(get(EXPIRATION_FILES_BASE_PATH).params(params)
+				.with(this.userAuthProfilesUtils.utenzaAdmin())
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andReturn();
+
+		JsonReader reader = Json.createReader(new ByteArrayInputStream(result.getResponse().getContentAsByteArray()));
+		JsonObject userList = reader.readObject();
+
+		// Controlli sulla paginazione
+		JsonObject page = userList.getJsonObject("page");
+		assertEquals(0, page.getInt("offset"));
+		assertEquals(Costanti.USERS_QUERY_PARAM_LIMIT_DEFAULT_VALUE, page.getInt("limit"));
+		assertEquals(1, page.getInt("total"));
+
+		// Controlli sugli items
+		JsonArray items = userList.getJsonArray("items");
+		assertEquals(1, items.size());
+
+
+		JsonObject item1 = items.getJsonObject(0);
+
+		assertEquals("02.csv", item1.getString("filename"));
+	}
 }
