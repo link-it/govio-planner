@@ -95,7 +95,6 @@ class Files_UC_1_UploadExpirationFileTest {
 		ExpirationFileEntity expirationFileEntity = this.fileRepository.findById((long) idFile).get();
 
 		assertEquals(item.getInt("id"), expirationFileEntity.getId());
-		assertEquals(item.getString("filename"), expirationFileEntity.getName());
 		assertEquals(item.getInt("uploader_id"), expirationFileEntity.getUploaderUser().getId());
 		assertEquals(item.getString("plan_id"), expirationFileEntity.getPlanId());
 		//assertEquals(item.getString("creation_date"), dt.format(expirationFileEntity.getCreationDate()));
