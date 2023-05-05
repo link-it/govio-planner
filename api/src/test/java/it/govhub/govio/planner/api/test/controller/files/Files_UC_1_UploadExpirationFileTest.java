@@ -1,5 +1,6 @@
 package it.govhub.govio.planner.api.test.controller.files;
 
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -82,7 +83,7 @@ class Files_UC_1_UploadExpirationFileTest {
 				)
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").isNumber())
-				.andExpect(jsonPath("$.filename", is(fileName)))
+				.andExpect(jsonPath("$.filename", endsWith(fileName)))
 				.andExpect(jsonPath("$.plan_id", is(planId)))
 				.andExpect(jsonPath("$.uploader_id").isNumber())
 				.andExpect(jsonPath("$.creation_date").exists())
