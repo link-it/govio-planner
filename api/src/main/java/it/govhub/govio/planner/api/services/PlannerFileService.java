@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 import javax.transaction.Transactional;
 
@@ -53,6 +54,7 @@ public class PlannerFileService {
     		throw new InternalException("Non è stato possibile creare la directory per conservare i files");
     	}
     	
+    	sourceFilename = UUID.randomUUID() + "-" + sourceFilename;
     	Path destFile =  destPath
     				.resolve(sourceFilename);
     	
