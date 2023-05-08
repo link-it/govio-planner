@@ -83,11 +83,11 @@ public class CSVItem {
     		logger.warn("valore {} del csv sintatticamente errato per il campo nome completo",item.getFullName());
     		return false;
     	}
-    	if (!Pattern.matches("^[A-Z]{2}[0-9]{7}$",item.getIdentityCardNumber())) {
+    	if (!Pattern.matches("^[A-Z]{2}\\d{7}$",item.getIdentityCardNumber())) {
     		logger.warn("valore {} del csv sintatticamente errato per il campo numero di carta d'identità",item.getIdentityCardNumber());
     		return false;
     	}
-    	if (!Pattern.matches("^[A-Z]{6}[0-9]{2}[A-Z]{1}[0-9]{2}[A-Z]{1}[0-9]{3}[A-Z]{1}$",item.getTaxCode())) {
+    	if (!Pattern.matches("^[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]$",item.getTaxCode())) {
     		logger.warn("valore {} del csv sintatticamente errato per il campo codice fiscale",item.getTaxCode());
     		return false;
     	}
