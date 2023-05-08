@@ -50,7 +50,7 @@ import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 			// calcola la data e l'orario di spedizione, sommando ai valori di default e i parametri di configurazione
 			LocalDateTime expeditionDate = LocalDateTime.of(LocalDate.now().plusDays(daysDelay), expeditionHour.plusHours(hoursDelay));
 			jobExecutionContext.put("expeditionDate",expeditionDate.toString());
-			logger.info("Expedition date: {}",expeditionDate.toString());
+			logger.info("Expedition date: {}",expeditionDate);
 
 			return null;
 		}
