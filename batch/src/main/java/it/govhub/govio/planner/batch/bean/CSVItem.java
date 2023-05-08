@@ -40,7 +40,7 @@ public class CSVItem {
 	String taxCode;
 	String codPositionAnagrafica;
 	
-	private Logger logger = LoggerFactory.getLogger(NotifyItemProcessor.class);
+	final private Logger logger = LoggerFactory.getLogger(CSVItem.class);
 
     public void setFullName(String fullName) {
     	this.fullName = fullName.trim();
