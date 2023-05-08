@@ -2,10 +2,18 @@ package it.govhub.govio.planner.batch;
 
 import java.time.LocalDate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.JobParametersInvalidException;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.NoSuchJobException;
+import org.springframework.batch.core.launch.NoSuchJobExecutionException;
+import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
+import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
+import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
@@ -14,26 +22,34 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import it.govhub.govio.planner.batch.service.GovioPlannerBatchService;
+import it.govhub.govio.planner.batch.config.GovioPlannerConfig;
+
 
 @SpringBootApplication(scanBasePackages={"it.govhub.govio.planner"})
 @EnableScheduling
 public class Application extends SpringBootServletInitializer {
 	
-	@Autowired
-	private JobLauncher jobLauncher;
+	private Logger log = LoggerFactory.getLogger(Application.class);
+	
+	public static final String GOVIOJOBID_STRING = "GovioJobID";
 
 	@Autowired
 	@Qualifier("PlannerJob") 
 	private Job plannerJob;
+	
+	@Autowired
+	GovioPlannerBatchService govioBatches;
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
+
 	@Scheduled(cron = "0 0 */1 * * *", zone = "Europe/Berlin")
-	public void lookForExpiringJob() throws Exception {
-		JobParameters params = new JobParametersBuilder()
-				.addString("GovioPlannerJobID", LocalDate.now().toString())
-				.toJobParameters();
-		jobLauncher.run(plannerJob, params);
+	public void fileProcessingJob() throws JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException, JobParametersInvalidException, NoSuchJobExecutionException, NoSuchJobException   {
+		this.log.info("Running scheduled {}", GovioPlannerConfig.PLANNERJOB);
+		this.govioBatches.runPlannerJob();
 	}
+
 }
