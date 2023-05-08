@@ -1,10 +1,8 @@
 package it.govhub.govio.planner.batch.entity;
 
-import java.nio.file.Path;
 import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -42,16 +40,13 @@ public class GovioFileProducedEntity {
         
         @Column(name = "creation_date", nullable = false)
         private OffsetDateTime creationDate;
-        	
+        
         @Column(name = "status", nullable = false)
         @Enumerated(EnumType.STRING)
         private Status status;
         
         @Column(name = "location", nullable = false)
         private String location;
-
-        @Column(name = "size")
-        private Long size;
 
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "id_govio_planner_file", nullable = false, foreignKey = @ForeignKey(name = "GovioFileProducedEntity_GovioPlannerFile"))

@@ -12,33 +12,37 @@ import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import it.govhub.govio.planner.batch.config.GovioPlannerConfig;
 import it.govhub.govio.planner.batch.entity.ExpirationCIEFileEntity;
 import it.govhub.govio.planner.batch.repository.ExpirationCIEFileRepository;
 
+/*
+ * 
+ * Tasklet che ha il compito di individuare il file delle scadenze.
+ * 
+ * 
+ */
 public class LookForFileTasklet implements Tasklet {
 	@Autowired
 	ExpirationCIEFileRepository expirationCIEFileRepository;
 
-	private Logger logger = LoggerFactory.getLogger(GovioPlannerConfig.class);
+	private Logger logger = LoggerFactory.getLogger(LookForFileTasklet.class);
 
 
 	@Override
-	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
-		// TODO Auto-generated method stub
+	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws IOException {
 		ExpirationCIEFileEntity expFile = expirationCIEFileRepository.lastExpirationFile();
-		if (expFile == null) {
-			logger.error("Il tracciato delle notifiche è assente");
-			throw new IOException("Il tracciato delle notifiche è assente");
+		if (expFile==null) {
+			logger.error("Il file delle scadenze è assente nel database");
+			throw new IOException("Il tracciato delle notifiche è assente nel database");
 		}
 		File exp = new File(expFile.getLocation());
-		if (expFile == null || !exp.canRead()) {
-			logger.error("Il tracciato delle notifiche è assente o non è leggibile");
-			throw new IOException("Il tracciato delle notifiche è assente o non è leggibile");
+		if (exp == null || !exp.canRead()) {
+			logger.error("Il file delle scadenze è assente o non è leggibile");
+			throw new IOException("Il file delle scadenze è assente o non è leggibile");
 		}
 		ExecutionContext jobExecutionContext = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
-		jobExecutionContext.put("idExp", ((expFile==null)? null: expFile.getId()));
-		jobExecutionContext.put("location", ((expFile==null)? null: expFile.getLocation()));
+		jobExecutionContext.put("location", expFile.getLocation());
+		logger.info("Trovato il path del file delle scadenze {}",expFile.getLocation());
 		return null;
 	}
 }

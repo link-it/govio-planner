@@ -1,35 +1,22 @@
 package it.govhub.govio.planner.batch.config;
 
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
 import javax.persistence.EntityManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.annotation.AfterWrite;
-import org.springframework.batch.core.annotation.BeforeStep;
-import org.springframework.batch.core.annotation.BeforeWrite;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemStreamReader;
 import org.springframework.batch.item.ItemStreamWriter;
-import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.FlatFileHeaderCallback;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.FlatFileItemWriter;
@@ -44,8 +31,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-
 import it.govhub.govio.planner.batch.repository.*;
 import it.govhub.govio.planner.batch.step.*;
 import it.govhub.govio.planner.batch.bean.*;
@@ -71,12 +56,15 @@ public class GovioPlannerConfig {
 	
 	@Autowired
 	ExpirationCIEFileRepository expirationCIEFileRepository;
+	
+	public static final String PLANNERJOB= "PlannerJob";
+
 
 	@Bean
 	@StepScope
 	@Qualifier("notifyItemReader")
-	public ItemStreamReader<CSVItem> notifyItemReader(@Value("#{jobExecutionContext[location]}") String filename) {
-		FlatFileItemReader<CSVItem> itemReader = new FlatFileItemReader<CSVItem>();
+	public FlatFileItemReader<CSVItem> notifyItemReader(@Value("#{jobExecutionContext[location]}") String filename) {
+		FlatFileItemReader<CSVItem> itemReader = new FlatFileItemReader<>();
 		  //Set input file location
 		itemReader.setResource(new FileSystemResource(filename));
 		  //Set number of lines to skips. Use it if file has header rows.
@@ -85,50 +73,49 @@ public class GovioPlannerConfig {
 		itemReader.setStrict(false);
 		DelimitedLineTokenizer tokenizer = new DelimitedLineTokenizer();
 		tokenizer.setDelimiter(";");
-		tokenizer.setNames(new String[] { "fullName", "date", "address","identityCardNumber","dueDate","CAP","age","gender","releaseDate","taxCode","codPositionAnagrafica"});
-		DefaultLineMapper<CSVItem> lineMapper = new DefaultLineMapper<CSVItem>();
+		tokenizer.setNames(new String[] { "fullName", "birthdate", "address","identityCardNumber","dueDate","CAP","age","gender","releaseDate","taxCode","codPositionAnagrafica"});
+		DefaultLineMapper<CSVItem> lineMapper = new DefaultLineMapper<>();
 		lineMapper.setLineTokenizer(tokenizer);
 		//Set values in CSVItem class
-		BeanWrapperFieldSetMapper<CSVItem> setMapper = new BeanWrapperFieldSetMapper<CSVItem>();
+		BeanWrapperFieldSetMapper<CSVItem> setMapper = new BeanWrapperFieldSetMapper<>();
 		setMapper.setTargetType(CSVItem.class);
 		lineMapper.setFieldSetMapper(setMapper);
 		itemReader.setLineMapper(lineMapper);
 		return itemReader;
 	}
 	
-	/*
-	 * per personalizzare il nome degli header del csv
-	public class MyFlatFileWriter extends FlatFileItemWriter<CSVItem> {
+// per personalizzare il nome degli header del csv
+	public class MyFlatFileWriter extends FlatFileItemWriter<CSVExpiration> {
 
 	    public MyFlatFileWriter (){
 	        super.setHeaderCallback(new FlatFileHeaderCallback() {
 
 				@Override
 	            public void writeHeader(Writer writer) throws IOException {
-	                writer.write("COGNOME E NOME;DATA NASCITA;INDIRIZZO COMPLETO;NUMERO CARTA IDENTITA;DATA DI SCADENZA C.I;C.A.P;INDIRIZZO;ETA;SIGLA SESSO (M/F);DATA CARTA IDENTITA;CODICE FISCALE;CODICE POSIZIONE ANAGRAFICA");
-
+					writer.write("tax_code;expedition_date;due_date;full_name;identity_card_number;release_date;forewarning");
 	            }
-
 	        });
 	    }
 	}
+
+	/*
+	 * 
+	 * Scrittura del file csv contenente le nuove notifiche
+	 * 	
 	 */
-
-
-	
 	  @Bean
 	  @StepScope
 	  @Qualifier("notifyItemWriter")
-	  public ItemStreamWriter<CSVExpiration> notifyItemWriter()
+	  public FlatFileItemWriter<CSVExpiration> notifyItemWriter()
 	  {
 	    //Create writer instance
-	    FlatFileItemWriter<CSVExpiration> writer = new FlatFileItemWriter<CSVExpiration>();
-	     
+	    FlatFileItemWriter<CSVExpiration> writer = new MyFlatFileWriter();
+	    
 	    String filename = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
 
 	    //Set output file location
 	    writer.setResource(new FileSystemResource(filename));
-	     
+	    
 	    //All job repetitions should "append" to same output file
 	    writer.setAppendAllowed(true);
 
@@ -139,7 +126,7 @@ public class GovioPlannerConfig {
 	        setFieldExtractor(new BeanWrapperFieldExtractor<CSVExpiration>() {
 	          {
 	            setNames(new String[] {
-	            		"tax_code", "expedition_date", "due_date","full_name","identity_card_number","release_date","forewarning"
+	            		"taxCode", "expeditionDate", "dueDate","fullName","identityCardNumber","releaseDate","forewarning"
 	            		});
 	          }
 	        });
@@ -152,38 +139,28 @@ public class GovioPlannerConfig {
 	@Bean
 	@StepScope
 	@Qualifier("notifyItemProcessor")
-	public ItemProcessor<CSVItem,CSVExpiration> notifyItemProcessor(@Value("#{jobExecutionContext[date]}") String date) {
-		ItemProcessor<CSVItem, CSVExpiration> notifyItemProcessor = new NotifyItemProcessor(date);
-		return notifyItemProcessor;
+	public ItemProcessor<CSVItem,CSVExpiration> notifyItemProcessor(@Value("#{jobExecutionContext[date]}") String date,
+																	@Value("#{jobExecutionContext[expeditionDate]}") String expeditionDate) {
+	 		return new NotifyItemProcessor(date,expeditionDate );
 	}
 
 	@Bean
 	@StepScope
 	@Qualifier("dateTasklet")
 	public Tasklet dateTasklet() {
-		LookForLastDateTasklet lookForLastDateTasklet = new LookForLastDateTasklet();
-        return lookForLastDateTasklet;
+        return new LookForLastDateTasklet();
 	}
 	
 	@Bean
 	@StepScope
 	@Qualifier("fileTasklet")
 	public Tasklet fileTasklet() {
-		LookForFileTasklet fileTasklet = new LookForFileTasklet();
-        return fileTasklet;
-	}
-
-	@Bean
-	@StepScope
-	@Qualifier("saveTasklet")
-	public Tasklet saveTasklet(@Value("#{jobExecutionContext[idExp]}") Long idExpFile) {
-		NotifyRecordWriterTasklet saveTasklet = new NotifyRecordWriterTasklet(idExpFile);
-        return saveTasklet;
+        return new LookForFileTasklet();
 	}
 
 	@Bean(name = "PlannerJob")
 	public Job plannerJob(
-			@Qualifier("notifyItemReader") Step notifyStep
+			@Qualifier("notifyStep") Step notifyStep
 			)  {
 	    return jobs.get("plannerJob")
 	  	   .start(lookForLastDateTasklet())
@@ -193,7 +170,7 @@ public class GovioPlannerConfig {
 	}
 	
 	@Bean
-	@Qualifier("notifyItemReader")
+	@Qualifier("notifyStep")
 	public Step notifyStep(
 			ItemStreamReader<CSVItem> notifyItemReader,
 			ItemProcessor<CSVItem,CSVExpiration> notifyItemProcessor,
@@ -219,14 +196,6 @@ public class GovioPlannerConfig {
 	public Step lookForFileTasklet() {
 		return steps.get("lookForFileTasklet")
 				.tasklet(fileTasklet())
-				.build();
-	}
-	
-	@Bean
-	@Qualifier("recordSaveTasklet")
-	public Step recordSaveTasklet(Tasklet saveTasklet) {
-		return steps.get("recordSaveTasklet")
-				.tasklet(saveTasklet)
 				.build();
 	}
 }
