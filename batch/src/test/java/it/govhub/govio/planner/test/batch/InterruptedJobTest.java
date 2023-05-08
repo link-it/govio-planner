@@ -111,16 +111,9 @@ public class InterruptedJobTest {
 	
 	Logger log = LoggerFactory.getLogger(InterruptedJobTest.class);
 	
-	// data in cui gira il test
-	private final static LocalDate LOCAL_DATE = LocalDate.of(2023, 05, 04);
-
-	
 	@BeforeEach
 	void setUp(){
 		// mock del metodo LocalDate.now() in modo da far restituire sempre il giorno 05/05/2023
-		Mockito
-		.when(clock.now())
-		.thenReturn(LOCAL_DATE);
 		govioFileProducedRepository.deleteAll();
 		expirationCIEFileRepository.deleteAll();
 	}
@@ -136,6 +129,9 @@ public class InterruptedJobTest {
 	@Test
 	void testSecondRunDoesNothingOK() throws Exception {
 		try {
+			Mockito
+			.when(clock.now())
+			.thenReturn(LocalDate.of(2023, 05, 04));
 		initializeJobLauncherTestUtils();
 		// file delle scadenze caricato in /test/resources
 		String routePath = expFile;
@@ -162,6 +158,10 @@ public class InterruptedJobTest {
 	// test che verifica il corretto funzionamento del batch ad una seconda iterazione dopo essere fallito la prima volta per errore, e dopo che tale errore sia risolto
 	@Test
 	void testNewCSVFirstKOThenOK() throws Exception {
+		Mockito
+		.when(clock.now())
+		.thenReturn(LocalDate.of(2023, 05, 01));
+
 		initializeJobLauncherTestUtils();
 
 		final Future<JobExecution> futureBrokenJob = this.runNotifyAsync();
@@ -170,7 +170,7 @@ public class InterruptedJobTest {
 		
 		if (brokenExecution != null) {
 			this.log.info("Il Job [{}] è rimasto in stato {}", GovioPlannerConfig.PLANNERJOB, brokenExecution.getStatus());
-			Assert.assertTrue(BatchStatus.UNKNOWN == brokenExecution.getStatus() || BatchStatus.FAILED == brokenExecution.getStatus());
+			Assert.assertTrue(BatchStatus.FAILED == brokenExecution.getStatus());
 		}
 
 		File createdFile=null;
@@ -183,17 +183,12 @@ public class InterruptedJobTest {
 		expirationCIEFileRepository.save(expirationCIEFileEntity);
 		govioFileProducedRepository.save(govioFileProducedEntity);
 		
-	// JobExecution jobExecution = govioBatchService.runPlannerJob();
-		
 		Assert.assertEquals("FAILED", brokenExecution.getExitStatus().getExitCode());
-
 
 		// Rilancio l'esecuzione
 		JobExecution jobExecution = govioBatchService.runPlannerJob();
 		
 		Assert.assertEquals("COMPLETED", jobExecution.getStatus().toString());
-
-		
 		
 		// file delle notifiche creato in /test/resources 
 		String fileCreatedPath = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
