@@ -19,12 +19,9 @@
 package it.govhub.govio.planner.test.batch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doReturn;
-
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -34,13 +31,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -51,7 +44,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ActiveProfiles;
 
 import it.govhub.govio.planner.batch.*;
@@ -63,7 +55,6 @@ import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity.Status;
 import it.govhub.govio.planner.batch.repository.ExpirationCIEFileRepository;
 import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 import it.govhub.govio.planner.batch.service.*;
-import it.govhub.govio.planner.batch.step.NotifyItemProcessor;
 
 @ActiveProfiles("test")
 @SpringBootTest(classes = Application.class)
@@ -73,11 +64,7 @@ import it.govhub.govio.planner.batch.step.NotifyItemProcessor;
 	@Value("${planner.exp.csv-dir}")
 	private String expFile;
 	@Value("${planner.ntfy.date-time}")
-	private String dateTime;
-	@Value("${planner.ntfy.dalay-days}")
-	private long daysDelay;
-	@Value("${planner.ntfy.dalay-time}")
-	private long hoursDelay;
+	private String dateTimeDelay;
 	
 
 
@@ -182,8 +169,14 @@ import it.govhub.govio.planner.batch.step.NotifyItemProcessor;
    	    FileUtils.copyFile(template,expectedFile);
 		byte[] buff = Files.readAllBytes(expectedFile.toPath());
 		// calcolo dell'expedition date
-		LocalTime expeditionHour = ((dateTime==null) ? LocalTime.NOON : LocalTime.parse(dateTime));
-		LocalDateTime expeditionDate = LocalDateTime.of(LocalDate.now().plusDays(daysDelay), expeditionHour.plusHours(hoursDelay));
+		LocalDateTime expeditionDate;
+		// se sono passate le 12:00 metto data di spedizione a domani a mezzogiorno, sennò oggi a mezzogiorno
+		LocalTime noon = LocalTime.NOON;
+		LocalDate today = LocalDate.now(ZoneId.of("Europe/Berlin"));
+		expeditionDate = LocalDateTime.of(today, noon);
+		if (LocalTime.now().getHour()>12) expeditionDate = expeditionDate.plusDays(1);
+		// in caso il parametro dateTimeDelay non sia vuoto, viene settato un ritardo alla spedizione del messaggio
+		if (dateTimeDelay!=null) expeditionDate.plusHours(Long.valueOf(dateTimeDelay));
 		// sostituisco il placeholder del valore dell'expedition date con il valore corretto essendo l'expedition date calcolata in base alla data corrente
 		String s = new String(buff, Charset.defaultCharset());
 		s = s.replaceAll(Pattern.quote("$expedition_date"), expeditionDate.toString());
@@ -222,8 +215,14 @@ import it.govhub.govio.planner.batch.step.NotifyItemProcessor;
    	    FileUtils.copyFile(template,expectedFile);
 		byte[] buff = Files.readAllBytes(expectedFile.toPath());
 		// calcolo dell'expedition date
-		LocalTime expeditionHour = ((dateTime==null) ? LocalTime.NOON : LocalTime.parse(dateTime));
-		LocalDateTime expeditionDate = LocalDateTime.of(LocalDate.now().plusDays(daysDelay), expeditionHour.plusHours(hoursDelay));
+		LocalDateTime expeditionDate;
+		// se sono passate le 12:00 metto data di spedizione a domani a mezzogiorno, sennò oggi a mezzogiorno
+		LocalTime noon = LocalTime.NOON;
+		LocalDate today = LocalDate.now(ZoneId.of("Europe/Berlin"));
+		expeditionDate = LocalDateTime.of(today, noon);
+		if (LocalTime.now().getHour()>12) expeditionDate = expeditionDate.plusDays(1);
+		// in caso il parametro dateTimeDelay non sia vuoto, viene settato un ritardo alla spedizione del messaggio
+		if (dateTimeDelay!=null) expeditionDate.plusHours(Long.valueOf(dateTimeDelay));
 		// sostituisco il placeholder del valore dell'expedition date con il valore corretto
 		String s = new String(buff, Charset.defaultCharset());
 		s = s.replaceAll(Pattern.quote("$expedition_date"), expeditionDate.toString());

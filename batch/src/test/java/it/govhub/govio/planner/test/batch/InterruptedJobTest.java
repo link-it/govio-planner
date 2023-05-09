@@ -39,8 +39,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobInstance;
-import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobOperator;
@@ -57,10 +55,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.CannotCreateTransactionException;
-import org.springframework.transaction.TransactionSystemException;
-import org.springframework.web.client.HttpClientErrorException;
-
 import it.govhub.govio.planner.batch.Application;
 import it.govhub.govio.planner.batch.bean.MyClock;
 import it.govhub.govio.planner.batch.config.GovioPlannerConfig;
@@ -70,7 +64,7 @@ import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity.Status;
 import it.govhub.govio.planner.batch.repository.ExpirationCIEFileRepository;
 import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 import it.govhub.govio.planner.batch.service.GovioPlannerBatchService;
-
+import it.govhub.govio.planner.test.config.JobOperatorConfig;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
