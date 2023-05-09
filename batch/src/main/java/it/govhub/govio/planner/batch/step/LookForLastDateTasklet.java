@@ -46,9 +46,9 @@ import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 		private String lastDate;
 		@Value("${planner.ntfy.date-time}")
 		private String dateTime;
-		@Value("${planner.ntfy.dalay-days}")
+		@Value("${planner.ntfy.delay-days}")
 		private long daysDelay;
-		@Value("${planner.ntfy.dalay-time}")
+		@Value("${planner.ntfy.delay-time}")
 		private long hoursDelay;
 
 		@Autowired
