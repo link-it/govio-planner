@@ -46,8 +46,8 @@ import lombok.ToString;
 public class ExpirationCIEFileEntity {        public enum Status {CREATED, PROCESSING, PROCESSED}
 
 @Id 
-@SequenceGenerator(name="seq_govio_planner_files",sequenceName="seq_govio_planner_files", initialValue=1, allocationSize=1)
-@GeneratedValue(strategy= GenerationType.SEQUENCE, generator="seq_govio_planner_files")
+@SequenceGenerator(name="seq_govio_planner_exp_files",sequenceName="seq_govio_planner_exp_files", initialValue=1, allocationSize=1)
+@GeneratedValue(strategy= GenerationType.SEQUENCE, generator="seq_govio_planner_exp_files")
 private Long id;
 
 @Column(name = "name", nullable = false)

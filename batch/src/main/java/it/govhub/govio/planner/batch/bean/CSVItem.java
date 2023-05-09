@@ -19,8 +19,6 @@
 package it.govhub.govio.planner.batch.bean;
 
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -29,7 +27,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.govhub.govio.planner.batch.step.NotifyItemProcessor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
