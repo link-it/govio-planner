@@ -79,11 +79,7 @@ public class InterruptedJobTest {
 	@Value("${planner.exp.csv-dir}")
 	private String expFile;
 	@Value("${planner.ntfy.date-time}")
-	private String dateTime;
-	@Value("${planner.ntfy.dalay-days}")
-	private long daysDelay;
-	@Value("${planner.ntfy.dalay-time}")
-	private long hoursDelay;
+	private String dateTimeDelay;
 	
 
 	@Autowired

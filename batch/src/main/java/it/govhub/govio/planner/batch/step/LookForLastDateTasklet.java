@@ -68,7 +68,7 @@ public class LookForLastDateTasklet implements Tasklet {
 		expeditionDate = LocalDateTime.of(today, noon);
 		if (LocalTime.now().getHour()>12) expeditionDate = expeditionDate.plusDays(1);
 		// in caso il parametro dateTimeDelay non sia vuoto, viene settato un ritardo alla spedizione del messaggio
-		if (dateTimeDelay!=null) expeditionDate.plusHours(Long.valueOf(dateTimeDelay));
+		if (!dateTimeDelay.isEmpty()) expeditionDate.plusHours(Long.valueOf(dateTimeDelay));
 		jobExecutionContext.put("expeditionDate",expeditionDate.toString());
 		logger.info("Expedition date: {}",expeditionDate);
 

@@ -17,6 +17,7 @@
 	<packaging>pom</packaging>
 	<name>GovIO Planner</name>
 	<properties>
+	        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<commons-configuration2.version>2.8.0</commons-configuration2.version>
 		<commons-io.version>2.11.0</commons-io.version>
 		<commons-fileupload.version>1.4</commons-fileupload.version>

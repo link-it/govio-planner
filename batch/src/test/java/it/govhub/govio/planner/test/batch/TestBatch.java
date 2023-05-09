@@ -176,7 +176,7 @@ import it.govhub.govio.planner.batch.service.*;
 		expeditionDate = LocalDateTime.of(today, noon);
 		if (LocalTime.now().getHour()>12) expeditionDate = expeditionDate.plusDays(1);
 		// in caso il parametro dateTimeDelay non sia vuoto, viene settato un ritardo alla spedizione del messaggio
-		if (dateTimeDelay!=null) expeditionDate.plusHours(Long.valueOf(dateTimeDelay));
+		if (!dateTimeDelay.isEmpty()) expeditionDate.plusHours(Long.valueOf(dateTimeDelay));
 		// sostituisco il placeholder del valore dell'expedition date con il valore corretto essendo l'expedition date calcolata in base alla data corrente
 		String s = new String(buff, Charset.defaultCharset());
 		s = s.replaceAll(Pattern.quote("$expedition_date"), expeditionDate.toString());
@@ -222,7 +222,7 @@ import it.govhub.govio.planner.batch.service.*;
 		expeditionDate = LocalDateTime.of(today, noon);
 		if (LocalTime.now().getHour()>12) expeditionDate = expeditionDate.plusDays(1);
 		// in caso il parametro dateTimeDelay non sia vuoto, viene settato un ritardo alla spedizione del messaggio
-		if (dateTimeDelay!=null) expeditionDate.plusHours(Long.valueOf(dateTimeDelay));
+		if (!dateTimeDelay.isEmpty()) expeditionDate.plusHours(Long.valueOf(dateTimeDelay));
 		// sostituisco il placeholder del valore dell'expedition date con il valore corretto
 		String s = new String(buff, Charset.defaultCharset());
 		s = s.replaceAll(Pattern.quote("$expedition_date"), expeditionDate.toString());
