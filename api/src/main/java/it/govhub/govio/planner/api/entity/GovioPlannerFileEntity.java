@@ -54,10 +54,10 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 @Entity
-@Table(name = "govio_planner_govio_files")
+@Table(name = "govio_planner_ntfy_files")
 public class GovioPlannerFileEntity {
 
-	public enum Status {CREATED, THROTTLED, SENT}
+    public enum Status {CREATED, PROCESSING, PROCESSED}
 	
 	@Id 
 	@SequenceGenerator(name="seq_govio_planner_govio_files",sequenceName="seq_govio_planner_govio_files", initialValue=1, allocationSize=1)
@@ -72,7 +72,7 @@ public class GovioPlannerFileEntity {
 	private Status status;
 	
 	@Convert(converter = JpaPathConverter.class)
-	@Column(name = "location",  length = 1024, nullable = false)
+	@Column(name = "location",  nullable = false)
 	private Path location;
 	
 	@Column(name = "name", nullable = false, unique = true)
