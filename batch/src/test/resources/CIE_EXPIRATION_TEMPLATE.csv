@@ -1,0 +1,6 @@
+tax_code;expedition_date;due_date;full_name;identity_card_number;release_date;forewarning
+BTTNLN30T19A662C;$expedition_date;03/05/2023;CognomeYYY NomeXXX;AO9997054;07/06/2011;-1
+BTTNLN30T19A662C;$expedition_date;11/05/2023;CognomeYYY NomeXXX;AO9997054;07/06/2011;7
+BTTNLN30T19A662C;$expedition_date;03/06/2023;CognomeYYY NomeXXX;AO9997054;07/06/2011;30
+BTTNLN30T19A662C;$expedition_date;03/07/2023;CognomeYYY NomeXXX;AO9997054;07/06/2011;60
+BTTNLN30T19A662C;$expedition_date;02/08/2023;CognomeYYY NomeXXX;AO9997054;07/06/2011;90

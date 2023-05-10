@@ -45,7 +45,7 @@ import it.govhub.security.services.SecurityService;
 @Service
 public class PlannerFileService {
 	
-	@Value("${govio-planner.filerepository.path:/var/govio-planner/csv}")
+	@Value("${planner.exp.csv-dir:/var/govio-planner/csv}")
 	Path fileRepositoryPath;
 	
 	@Autowired
@@ -98,31 +98,4 @@ public class PlannerFileService {
     	return this.fileRepo.save(file);
 	}
 	
-    	
-
-/*	@Transactional
-	public FileMessageList listFileMessages(Specification<GovioFileMessageEntity> spec, LimitOffsetPageRequest pageRequest) {
-		
-		// TODO: Qui ho bisogno di un'entity graph che di ogni fileEntity mi peschi anche i
-		// fileMessages, altrimenti pago altre
-		// N query quando vado a convertire i files
-		
-		return null;
-		
-		Page<GovioFileMessageEntity> fileList = this.fileMessageRepo.findAll(spec, pageRequest.pageable);
-
-		HttpServletRequest curRequest = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
-				.getRequest();
-
-		FileMessageList ret = ListaUtils.buildPaginatedList(fileList, pageRequest.limit, curRequest,
-				new FileMessageList());
-
-		for (GovioFileMessageEntity fileMessage : fileList) {
-			ret.addItemsItem(this.fileMessageAssembler.toModel(fileMessage));
-		}
-		
-		return ret;
-	}
-	
-	*/
 }

@@ -41,19 +41,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>it.govhub.govio</groupId>
-			<artifactId>template-utils</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>it.govhub.govregistry</groupId>
-			<artifactId>commons</artifactId>
-			<version>${govregistry.version}</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
@@ -69,11 +56,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${commons-io.version}</version>
@@ -82,12 +64,6 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
@@ -133,18 +109,6 @@
 		<dependency>
 			<groupId>javax.annotation</groupId>
 			<artifactId>javax.annotation-api</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>io.swagger</groupId>
-			<artifactId>swagger-annotations</artifactId>
-			<version>${swagger-annotations.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.openapitools</groupId>
-			<artifactId>jackson-databind-nullable</artifactId>
-			<version>${jackson.databind.nullable.version}</version>
 		</dependency>
 
 		<dependency>
@@ -194,69 +158,11 @@
 			</plugin>
 			
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>resource-dependencies</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>unpack-dependencies</goal>
-						</goals>
-						<configuration>
-							<type>jar</type>
-							<includeArtifactIds>commons,api</includeArtifactIds>
-							<includes>govhub-api-commons.yaml</includes>
-							<outputDirectory>${project.basedir}/src/main/resources/static</outputDirectory>
-							<fileMappers>
-								<fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FlattenFileMapper"/>
-							</fileMappers>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			
-			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<release>${java.version}</release>
 					<forceJavacCompilerUse>true</forceJavacCompilerUse>
 				</configuration>
-			</plugin>
-			
-			
-			<plugin>
-				<groupId>org.openapitools</groupId>
-				<artifactId>openapi-generator-maven-plugin</artifactId>
-				<version>${openapi.tool.codegen.version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<id>generate-sources-client-govio-v1</id>
-						<phase>generate-sources</phase>
-						<configuration>
-							<inputSpec>${project.basedir}/src/main/resources/static/govio-api-backoffice.yaml</inputSpec>
-							<generatorName>java</generatorName>
-							<configOptions>
-								<dateLibrary>java8</dateLibrary>
-								<library>resttemplate</library>
-								<serializationLibrary>jackson</serializationLibrary>
-								<sourceFolder>generated-sources/java/</sourceFolder>
-								<basePackage>it.govhub.govio.client</basePackage>
-								<apiPackage>it.govhub.govio.client.spec</apiPackage>
-								<invokerPackage>it.govhub.govio.client.impl</invokerPackage>
-								<modelPackage>it.govhub.govio.client.beans</modelPackage>
-								<useAnnotatedBasePath>true</useAnnotatedBasePath>
-								<useBeanValidation>false</useBeanValidation>
-							</configOptions>
-							<output>${project.basedir}/target</output>
-							<generateApiTests>false</generateApiTests>
-							<generateModelTests>false</generateModelTests>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
@@ -272,13 +178,5 @@
 				</executions>
 			</plugin>
 		</plugins>
-		<extensions>
-			<!-- Enabling the use of SSH -->
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh-external</artifactId>
-				<version>${wagon-ssh-external.version}</version>
-			</extension>
-		</extensions>
 	</build>
 </project>
