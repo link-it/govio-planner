@@ -59,8 +59,7 @@ public class Application extends SpringBootServletInitializer {
 		SpringApplication.run(Application.class, args);
 	}
 
-	//@Scheduled(cron = "0 0 */1 * * *", zone = "Europe/Berlin")
-	@Scheduled(fixedDelay = 1000)
+	@Scheduled(cron = "0 0 */1 * * *", zone = "Europe/Berlin")
 	public void fileProcessingJob() throws JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException, JobParametersInvalidException, NoSuchJobExecutionException, NoSuchJobException   {
 		this.log.info("Running scheduled {}", GovioPlannerConfig.PLANNERJOB);
 		this.govioBatches.runPlannerJob();
