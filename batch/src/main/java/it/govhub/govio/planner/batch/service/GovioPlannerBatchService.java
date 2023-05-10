@@ -47,8 +47,6 @@ import it.govhub.govio.planner.batch.config.GovioPlannerConfig;
 @Service
 public class GovioPlannerBatchService {
 
-	private static final String PLANNERJOB = GovioPlannerConfig.PLANNERJOB;
-	public static final String PLANNERJOB_ID = "GovioPlannerJobID";
 
 	private LocalDate CURRENTDATE_STRING;
 
@@ -66,7 +64,7 @@ public class GovioPlannerBatchService {
 	JobOperator jobOperator;
 
 	@Autowired
-	@Qualifier("PlannerJob")
+	@Qualifier(GovioPlannerConfig.PLANNERJOB)
 	private Job plannerJob;
 	
 	@Autowired
@@ -79,7 +77,7 @@ public JobExecution runPlannerJob() throws JobExecutionAlreadyRunningException, 
 	
 	CURRENTDATE_STRING = myClock.now();
 	
-	JobInstance lastInstance = this.jobExplorer.getLastJobInstance(PLANNERJOB);
+	JobInstance lastInstance = this.jobExplorer.getLastJobInstance(GovioPlannerConfig.PLANNERJOB);
 	
 	// Determino i JobParameters con cui lanciare il Job. In base al loro valore avverrà un avvio nuovo, un restart, o nulla.
 	JobParameters params = null;
@@ -90,7 +88,7 @@ public JobExecution runPlannerJob() throws JobExecutionAlreadyRunningException, 
 	}
 	
 	if (lastInstance != null && lastExecution == null) {
-		log.error("Trovata istanza preesistente per il job [{}] ma senza una JobExecution associata, forse l'esecuzione deve ancora partire. Nessun Job avviato, se la situazione persiste anche nelle prossime run è richiesto un'intervento manuale.", PLANNERJOB);
+		log.error("Trovata istanza preesistente per il job [{}] ma senza una JobExecution associata, forse l'esecuzione deve ancora partire. Nessun Job avviato, se la situazione persiste anche nelle prossime run è richiesto un'intervento manuale.", GovioPlannerConfig.PLANNERJOB);
 		return null;
 	}
 	else if (lastExecution != null) {
@@ -116,11 +114,10 @@ public JobExecution runPlannerJob() throws JobExecutionAlreadyRunningException, 
 			// Siamo liberi di andare avanti e di eseguire un nuovo job.
 			log.info("Trovata istanza preesistente per il Job [{}]. Avvio nuovo Job. ", lastExecution); //GOVIO_PLANNER_JOB_ID, exitStatus, lastExecution.getStatus());
 			params = new JobParametersBuilder()
-					.addString("When", CURRENTDATE_STRING.toString())
-					.addString(PLANNERJOB_ID, GovioPlannerConfig.PLANNERJOB).toJobParameters();
+					.addString("When", CURRENTDATE_STRING.toString()).toJobParameters();
 			return jobLauncher.run(plannerJob, params);
-		
-		// In questo caso riavvio.
+
+			// In questo caso riavvio.
 		case FAILED:
 		case STOPPED:
 			log.info("Trovata istanza preesistente per il Job [{}]. Riavvio il Job. ", lastExecution); //FileProcessingJobConfig.FILEPROCESSING_JOB, exitStatus, lastExecution.getStatus());
@@ -136,8 +133,7 @@ public JobExecution runPlannerJob() throws JobExecutionAlreadyRunningException, 
 		}
 	}	else {
 		params = new JobParametersBuilder()
-				.addString("When", CURRENTDATE_STRING.toString())
-				.addString(PLANNERJOB_ID, GovioPlannerConfig.PLANNERJOB).toJobParameters();
+				.addString("When", CURRENTDATE_STRING.toString()).toJobParameters();
 		return jobLauncher.run(plannerJob, params);
 }
 }
