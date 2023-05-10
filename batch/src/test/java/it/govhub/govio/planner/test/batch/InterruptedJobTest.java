@@ -39,6 +39,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.configuration.JobRegistry;
+import org.springframework.batch.core.configuration.support.JobRegistryBeanPostProcessor;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.JobOperator;
@@ -51,6 +53,8 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
@@ -70,6 +74,7 @@ import it.govhub.govio.planner.test.config.JobOperatorConfig;
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
 @AutoConfigureMockMvc
+@Import({JobOperatorConfig.class})
 @TestInstance(Lifecycle.PER_CLASS)
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest(classes = Application.class)
@@ -110,8 +115,9 @@ public class InterruptedJobTest {
 
 	@Autowired
 	JobExplorer jobExplorer;
-
-
+	
+	@Autowired
+	JobRegistry jobRegistry;
 	
 	//Mock clock bean
     @MockBean
@@ -126,13 +132,6 @@ public class InterruptedJobTest {
 		expirationCIEFileRepository.deleteAll();
 	}
 
-	private void initializeJobLauncherTestUtils() throws Exception {
-		this.jobLauncherTestUtils = new JobLauncherTestUtils();
-		this.jobLauncherTestUtils.setJobLauncher(jobLauncher);
-		this.jobLauncherTestUtils.setJobRepository(jobRepository);
-		this.jobLauncherTestUtils.setJob(job);
-	}
-
 	// test per verificare che il batch nel caso giri una seconda volta nello stesso giorno, dopo aver completato con successo, non facendo nulla
 	@Test
 	void testSecondRunDoesNothingOK() throws Exception {
@@ -140,7 +139,6 @@ public class InterruptedJobTest {
 			Mockito
 			.when(clock.now())
 			.thenReturn(LocalDate.of(2023, 05, 04));
-		initializeJobLauncherTestUtils();
 		// file delle scadenze caricato in /test/resources
 		String routePath = expFile;
 		File f = new File(routePath+"CIE_scadenza_tracciato.csv");
@@ -170,12 +168,11 @@ public class InterruptedJobTest {
 		.when(clock.now())
 		.thenReturn(LocalDate.of(2023, 05, 01));
 
-		initializeJobLauncherTestUtils();
 
-		final Future<JobExecution> futureBrokenJob = this.runNotifyAsync();
+//		final Future<JobExecution> futureBrokenJob = this.runNotifyAsync();
 			
-		final JobExecution brokenExecution = futureBrokenJob.get();
-		
+//		final JobExecution brokenExecution = futureBrokenJob.get();
+		JobExecution brokenExecution = govioBatchService.runPlannerJob();
 		if (brokenExecution != null) {
 			this.log.info("Il Job [{}] è rimasto in stato {}", GovioPlannerConfig.PLANNERJOB, brokenExecution.getStatus());
 			Assert.assertTrue(BatchStatus.FAILED == brokenExecution.getStatus());
@@ -192,11 +189,12 @@ public class InterruptedJobTest {
 		govioFileProducedRepository.save(govioFileProducedEntity);
 		
 		Assert.assertEquals("FAILED", brokenExecution.getExitStatus().getExitCode());
-
+	//	long jobExecution = jobOperator.restart(brokenExecution.getId());
 		// Rilancio l'esecuzione
 		JobExecution jobExecution = govioBatchService.runPlannerJob();
-		
 		Assert.assertEquals("COMPLETED", jobExecution.getStatus().toString());
+
+	//	Assert.assertEquals("COMPLETED", jobExecution.getStatus().toString());
 		
 		// file delle notifiche creato in /test/resources 
 		String fileCreatedPath = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
