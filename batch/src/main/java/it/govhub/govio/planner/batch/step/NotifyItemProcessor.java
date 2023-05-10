@@ -18,10 +18,8 @@
  *******************************************************************************/
 package it.govhub.govio.planner.batch.step;
 
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.lang3.StringUtils;
@@ -30,10 +28,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-import it.govhub.govio.planner.batch.bean.CSVItem;
 import it.govhub.govio.planner.batch.bean.CSVExpiration;
+import it.govhub.govio.planner.batch.bean.CSVItem;
 import it.govhub.govio.planner.batch.bean.MyClock;
 
 /*

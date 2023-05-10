@@ -44,7 +44,7 @@ import it.govhub.security.services.SecurityService;
 @Service
 public class PlannerFileService {
 	
-	@Value("${govio-planner.filerepository.path:/var/govio-planner/csv}")
+	@Value("${planner.exp.csv-dir:/var/govio-planner/csv}")
 	Path fileRepositoryPath;
 	
 	@Autowired

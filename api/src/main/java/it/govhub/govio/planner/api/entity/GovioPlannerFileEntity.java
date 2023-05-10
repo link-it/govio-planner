@@ -60,8 +60,8 @@ public class GovioPlannerFileEntity {
     public enum Status {CREATED, PROCESSING, PROCESSED}
 	
 	@Id 
-	@SequenceGenerator(name="seq_govio_planner_govio_files",sequenceName="seq_govio_planner_govio_files", initialValue=1, allocationSize=1)
-	@GeneratedValue(strategy= GenerationType.SEQUENCE, generator="seq_govio_planner_govio_files")
+	@SequenceGenerator(name="seq_govio_planner_ntfy_files",sequenceName="seq_govio_planner_ntfy_files", initialValue=1, allocationSize=1)
+	@GeneratedValue(strategy= GenerationType.SEQUENCE, generator="seq_govio_planner_ntfy_files")
 	private Long id;
 	
 	@Column(name = "creation_date", nullable = false)

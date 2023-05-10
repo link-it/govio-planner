@@ -48,6 +48,7 @@ public class LookForFileTasklet implements Tasklet {
 
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws IOException {
+		logger.debug("LookForFileTasklet, recupero ultimo file caricato.");
 		ExpirationCIEFileEntity expFile = expirationCIEFileRepository.lastExpirationFile();
 		if (expFile==null) {
 			logger.error("Il file delle scadenze è assente nel database");
