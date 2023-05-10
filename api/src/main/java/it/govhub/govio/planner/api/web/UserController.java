@@ -45,5 +45,4 @@ public class UserController implements UserApi {
 		return this.readUserController.readUser(id);
 	}
 
-
 }

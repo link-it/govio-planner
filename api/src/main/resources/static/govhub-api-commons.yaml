@@ -303,6 +303,33 @@ components:
 
    schemas:
    
+      Application:
+        type: object
+        additionalProperties: false
+        properties:
+          application_id:
+            $ref: "#/components/schemas/ApplicationName"
+          application_name:
+            $ref: "#/components/schemas/ApplicationName"
+          deployed_uri:
+            type: string
+            format: uri
+          logo:
+            type: object
+            
+      ApplicationList:
+             type: object
+             properties:              
+                items:
+                   type: array
+                   items:
+                      $ref: "#/components/schemas/Application"
+                   minItems: 0
+                   maxItems: 2147483647
+             required:
+                 - items 
+   
+   
       Profile:
            type: object
            additionalProperties: false
@@ -1005,9 +1032,6 @@ components:
          properties:
           page:
              $ref: "#/components/schemas/PageInfo" 
-          # I links li aggiunge spring hateoas
-          #_links:
-          #   $ref: "#/components/schemas/PaginationLinks"
                     
       PageInfo:
          type: object

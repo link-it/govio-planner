@@ -1,0 +1,1 @@
+select * from govio_planner_ntfy_files;
