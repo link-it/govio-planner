@@ -1,6 +1,6 @@
 -- Applicazione
 
-INSERT INTO public.govhub_applications(id, application_id, name, deployed_uri, logo_type, logo_color, logo_bg_color) VALUES (3, 'govio_planner', 'GovIO Planner', 'http://localhost:10003', 'SVG', '#FFFF00', '#0000FF');
+INSERT INTO public.govhub_applications(id, application_id, name, deployed_uri) VALUES (3, 'govio_planner', 'GovIO Planner', 'http://localhost:10003');
 
 -- Utenti
 
@@ -26,6 +26,16 @@ INSERT INTO public.govhub_authorizations (id, id_govhub_user, id_govhub_role) VA
 	(SELECT id FROM public.govhub_users WHERE principal='pianificatore-scadenze'),
 	(SELECT id FROM public.govhub_roles WHERE name='govio_planner_operator' )
 );
+
+
+-- Assegno ruolo amministratore -> govio_planner-operator
+
+INSERT INTO public.govhub_authorizations (id, id_govhub_user, id_govhub_role) VALUES (
+	nextval('public.seq_govhub_authorizations'),
+	(SELECT id FROM public.govhub_users WHERE principal='amministratore'),
+	(SELECT id FROM public.govhub_roles WHERE name='govio_planner_operator' )
+);
+
 
 do $$
 declare
