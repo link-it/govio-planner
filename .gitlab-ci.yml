@@ -38,6 +38,7 @@ build_java:
     artifacts:
         paths:
           - api/target/govio-planner.war
+          - batch/target/govio-planner-batch.war
     only:
       - main
       - staging
@@ -47,10 +48,11 @@ deploy_staging:
   image: kroniak/ssh-client
   script:
     - cp -r /tmp/ssh/ ~/.ssh
+    - scp -r batch/target/govio-planner-batch.war $DEPLOY_STAGING_SSH_HOST:/tmp/
     - scp -r api/target/govio-planner.war $DEPLOY_STAGING_SSH_HOST:/tmp/
     - ssh $DEPLOY_STAGING_SSH_HOST 'sudo systemctl stop tomcat'
-    - ssh $DEPLOY_STAGING_SSH_HOST 'sudo cp -r /tmp/govio-planner.war /opt/apache-tomcat-9.0.70/webapps/'  
+    - ssh $DEPLOY_STAGING_SSH_HOST 'sudo cp -r /tmp/govio-planner.war /tmp/govio-planner-batch.war /opt/apache-tomcat-9.0.70/webapps/'  
     - ssh $DEPLOY_STAGING_SSH_HOST 'sudo systemctl start tomcat'
-    - ssh $DEPLOY_STAGING_SSH_HOST 'sudo rm -rf /tmp/govio-planner.war'
+    - ssh $DEPLOY_STAGING_SSH_HOST 'sudo rm -rf /tmp/govio-planner.war /tmp/govio-planner-batch.war'
   only:
     - staging
