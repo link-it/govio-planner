@@ -20,6 +20,7 @@ package it.govhub.govio.planner.api.filters;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
@@ -47,7 +48,7 @@ public class ExpirationFileFilters {
 
 		public static Specification<ExpirationFileEntity> byGovioFilename(String name) {
 			return (Root<ExpirationFileEntity> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
-				Path<String> fileNameNode = root.join(ExpirationFileEntity_.govioFiles).get(GovioPlannerFileEntity_.name);
+				Path<String> fileNameNode = root.join(ExpirationFileEntity_.govioFiles, JoinType.LEFT).get(GovioPlannerFileEntity_.name);
 				return cb.like(cb.lower(fileNameNode), "%"+name.toLowerCase()+"%");
 			};
 		}

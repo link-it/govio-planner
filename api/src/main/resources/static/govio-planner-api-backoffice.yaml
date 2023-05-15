@@ -433,7 +433,7 @@ components:
             plan_id: 
                $ref: "#/components/schemas/PlanId"
             filename:
-               $ref: "govio-api-backoffice.yaml#/components/schemas/FileName"
+               $ref: "#/components/schemas/FileName"
             creation_date:
                type: string
                format: date-time
@@ -479,6 +479,12 @@ components:
               required:
                  - items 
 
+      FileName:
+         type: string
+         pattern: .*
+         maxLength: 2048
+         example: file1.csv                 
+
       GovioFile:
          type: object
          additionalProperties: false
@@ -504,7 +510,7 @@ components:
             expiration_file_id:
               $ref: "#/components/schemas/ExpirationFileId"
             filename:
-               $ref: "govio-api-backoffice.yaml#/components/schemas/FileName"
+               $ref: "#/components/schemas/FileName"
             _links:
                  type: object
                  additionalProperties: false
