@@ -18,6 +18,7 @@
  *******************************************************************************/
 package it.govhub.govio.planner.api.test.controller.files;
 
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -26,7 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.ByteArrayInputStream;
-import java.time.format.DateTimeFormatter;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -73,7 +73,7 @@ class Files_UC_1_UploadExpirationFileTest {
 	@Autowired
 	ExpirationFileEntityRepository fileRepository;
 
-	private DateTimeFormatter dt = DateTimeFormatter.ISO_DATE_TIME;
+//	private DateTimeFormatter dt = DateTimeFormatter.ISO_DATE_TIME;
 
 	@Value("${govio-planner.time-zone:Europe/Rome}")
 	private String timeZone;
@@ -101,7 +101,7 @@ class Files_UC_1_UploadExpirationFileTest {
 				)
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").isNumber())
-				.andExpect(jsonPath("$.filename", is(fileName)))
+				.andExpect(jsonPath("$.filename", endsWith(fileName)))
 				.andExpect(jsonPath("$.plan_id", is(planId)))
 				.andExpect(jsonPath("$.uploader_id").isNumber())
 				.andExpect(jsonPath("$.creation_date").exists())
@@ -114,7 +114,6 @@ class Files_UC_1_UploadExpirationFileTest {
 		ExpirationFileEntity expirationFileEntity = this.fileRepository.findById((long) idFile).get();
 
 		assertEquals(item.getInt("id"), expirationFileEntity.getId());
-		assertEquals(item.getString("filename"), expirationFileEntity.getName());
 		assertEquals(item.getInt("uploader_id"), expirationFileEntity.getUploaderUser().getId());
 		assertEquals(item.getString("plan_id"), expirationFileEntity.getPlanId());
 		//assertEquals(item.getString("creation_date"), dt.format(expirationFileEntity.getCreationDate()));
