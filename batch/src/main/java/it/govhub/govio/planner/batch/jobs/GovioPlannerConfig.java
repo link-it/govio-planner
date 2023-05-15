@@ -16,13 +16,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *  
  *******************************************************************************/
-package it.govhub.govio.planner.batch.config;
+package it.govhub.govio.planner.batch.jobs;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.time.Clock;
 import java.time.LocalDate;
+
 import javax.persistence.EntityManager;
 
 import org.springframework.batch.core.Job;
@@ -33,6 +34,7 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemStreamException;
 import org.springframework.batch.item.ItemStreamReader;
 import org.springframework.batch.item.ItemStreamWriter;
 import org.springframework.batch.item.file.FlatFileHeaderCallback;
@@ -124,22 +126,28 @@ public class GovioPlannerConfig {
 	  @Bean
 	  @StepScope
 	  @Qualifier("notifyItemWriter")
-	  public FlatFileItemWriter<CSVExpiration> notifyItemWriter()
+	  public FlatFileItemWriter<CSVExpiration> notifyItemWriter() throws IOException
 	  {
 	    //Create writer instance
-	    FlatFileItemWriter<CSVExpiration> writer = new MyFlatFileWriter();
+	    FlatFileItemWriter<CSVExpiration> filewriter = new MyFlatFileWriter();
 	    
 	    String filename = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
+	    File file = new File(filename);
+	    if (!file.exists()) file.createNewFile();
+	    if (!file.canWrite()) {
+            throw new ItemStreamException("File is not writable: [" + file.getAbsolutePath() + "]");
+	    }
 
 	    //Set output file location
-	    writer.setResource(new FileSystemResource(filename));
+	    filewriter.setResource(new FileSystemResource(filename));
 	    
 	    //All job repetitions should "append" to same output file
-	    writer.setAppendAllowed(true);
+	    filewriter.setAppendAllowed(true);
 
 	    //Name field values sequence based on object properties 
-	    writer.setLineAggregator(new DelimitedLineAggregator<CSVExpiration>() {
+	    filewriter.setLineAggregator(new DelimitedLineAggregator<CSVExpiration>() {
 	      {
+	    	  // TODO: mettere ,
 	        setDelimiter(";");
 	        setFieldExtractor(new BeanWrapperFieldExtractor<CSVExpiration>() {
 	          {
@@ -150,15 +158,15 @@ public class GovioPlannerConfig {
 	        });
 	      }
 	    });
-	    return writer;
+	    return filewriter;
 	  }
 
 	
 	@Bean
 	@StepScope
 	@Qualifier("notifyItemProcessor")
-	public ItemProcessor<CSVItem,CSVExpiration> notifyItemProcessor(@Value("#{jobExecutionContext[date]}") String date,
-																	@Value("#{jobExecutionContext[expeditionDate]}") String expeditionDate) {
+	public ItemProcessor<CSVItem,CSVExpiration> notifyItemProcessor(@Value("#{jobExecutionContext[date]}") long date,
+																	@Value("#{jobExecutionContext[expeditionDate]}") long expeditionDate) {
 	 		return new NotifyItemProcessor(date,expeditionDate );
 	}
 
@@ -176,6 +184,14 @@ public class GovioPlannerConfig {
         return new LookForFileTasklet();
 	}
 
+
+	@Bean
+	@StepScope
+	@Qualifier("insertTasklet")
+	public Tasklet fileInsert() {
+        return new FileInsertTasklet();
+	}
+	
 	@Bean(name = "PlannerJob")
 	public Job plannerJob(
 			@Qualifier("notifyStep") Step notifyStep
@@ -184,7 +200,8 @@ public class GovioPlannerConfig {
 	  	   .start(lookForLastDateTasklet())
 		   .next(lookForFileTasklet())
 	      .next(notifyStep)
-	    .build();
+	      .next(fileInsertTasklet())
+	      .build();
 	}
 	
 	@Bean
@@ -199,6 +216,14 @@ public class GovioPlannerConfig {
 	    		.processor(notifyItemProcessor)
 	    		.writer(notifyItemWriter)
 	      .build();
+	}
+	
+	@Bean
+	@Qualifier("fileInsertTasklet")
+	public Step fileInsertTasklet() {
+		return steps.get("fileInsertTasklet")
+				.tasklet(fileInsert())
+				.build();
 	}
 
 	@Bean
