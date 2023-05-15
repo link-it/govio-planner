@@ -42,12 +42,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import it.govhub.govio.planner.batch.bean.MyClock;
-import it.govhub.govio.planner.batch.config.GovioPlannerConfig;
+import it.govhub.govio.planner.batch.jobs.GovioPlannerJob;
 
 @Service
 public class GovioPlannerBatchService {
 
-	private static final String PLANNERJOB = GovioPlannerConfig.PLANNERJOB;
+	private static final String PLANNERJOB = GovioPlannerJob.PLANNERJOB;
 	public static final String PLANNERJOB_ID = "GovioPlannerJobID";
 
 	private LocalDate CURRENTDATE_STRING;
@@ -117,7 +117,7 @@ public JobExecution runPlannerJob() throws JobExecutionAlreadyRunningException, 
 			log.info("Trovata istanza preesistente per il Job [{}]. Avvio nuovo Job. ", lastExecution); //GOVIO_PLANNER_JOB_ID, exitStatus, lastExecution.getStatus());
 			params = new JobParametersBuilder()
 					.addString("When", CURRENTDATE_STRING.toString())
-					.addString(PLANNERJOB_ID, GovioPlannerConfig.PLANNERJOB).toJobParameters();
+					.addString(PLANNERJOB_ID, GovioPlannerJob.PLANNERJOB).toJobParameters();
 			return jobLauncher.run(plannerJob, params);
 		
 		// In questo caso riavvio.
@@ -137,7 +137,7 @@ public JobExecution runPlannerJob() throws JobExecutionAlreadyRunningException, 
 	}	else {
 		params = new JobParametersBuilder()
 				.addString("When", CURRENTDATE_STRING.toString())
-				.addString(PLANNERJOB_ID, GovioPlannerConfig.PLANNERJOB).toJobParameters();
+				.addString(PLANNERJOB_ID, GovioPlannerJob.PLANNERJOB).toJobParameters();
 		return jobLauncher.run(plannerJob, params);
 }
 }

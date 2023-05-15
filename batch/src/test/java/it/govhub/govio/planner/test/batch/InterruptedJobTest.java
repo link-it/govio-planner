@@ -57,10 +57,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import it.govhub.govio.planner.batch.Application;
 import it.govhub.govio.planner.batch.bean.MyClock;
-import it.govhub.govio.planner.batch.config.GovioPlannerConfig;
 import it.govhub.govio.planner.batch.entity.ExpirationCIEFileEntity;
 import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity;
 import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity.Status;
+import it.govhub.govio.planner.batch.jobs.GovioPlannerJob;
 import it.govhub.govio.planner.batch.repository.ExpirationCIEFileRepository;
 import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 import it.govhub.govio.planner.batch.service.GovioPlannerBatchService;
@@ -83,7 +83,7 @@ public class InterruptedJobTest {
 	
 
 	@Autowired
-	@Qualifier(value = GovioPlannerConfig.PLANNERJOB)
+	@Qualifier(value = GovioPlannerJob.PLANNERJOB)
 	private Job job;
 
 	@Autowired
@@ -177,7 +177,7 @@ public class InterruptedJobTest {
 		final JobExecution brokenExecution = futureBrokenJob.get();
 		
 		if (brokenExecution != null) {
-			this.log.info("Il Job [{}] è rimasto in stato {}", GovioPlannerConfig.PLANNERJOB, brokenExecution.getStatus());
+			this.log.info("Il Job [{}] è rimasto in stato {}", GovioPlannerJob.PLANNERJOB, brokenExecution.getStatus());
 			Assert.assertTrue(BatchStatus.FAILED == brokenExecution.getStatus());
 		}
 

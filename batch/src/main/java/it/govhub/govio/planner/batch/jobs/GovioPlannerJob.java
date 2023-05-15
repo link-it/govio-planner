@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *  
  *******************************************************************************/
-package it.govhub.govio.planner.batch.config;
+package it.govhub.govio.planner.batch.jobs;
 
 
 import java.io.IOException;
@@ -56,7 +56,7 @@ import it.govhub.govio.planner.batch.bean.*;
 
 @Configuration
 @EnableBatchProcessing
-public class GovioPlannerConfig {
+public class GovioPlannerJob {
 	@Value("${planner.ntfy.csv-dir}")
 	private String notifyFile;
 
