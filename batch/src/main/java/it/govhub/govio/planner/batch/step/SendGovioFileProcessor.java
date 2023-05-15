@@ -29,7 +29,7 @@ public class SendGovioFileProcessor implements ItemProcessor<GovioFileProducedEn
 	@Autowired
 	private FileApi govioFileClient;
 	
-	@Value("${planner.govio.client-debugging:false")
+	@Value("${planner.govio.client-debugging:false}")
 	private boolean debugging;
 	
 	@Value("${planner.govio.service-instance}")

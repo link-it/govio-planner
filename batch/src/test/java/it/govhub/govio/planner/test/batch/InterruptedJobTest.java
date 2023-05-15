@@ -24,10 +24,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
+import java.time.ZoneOffset;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,20 +35,14 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
-import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.explore.JobExplorer;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.launch.JobOperator;
-import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
@@ -71,6 +62,7 @@ import it.govhub.govio.planner.test.config.JobOperatorConfig;
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
 @AutoConfigureMockMvc
+@Import({JobOperatorConfig.class})
 @TestInstance(Lifecycle.PER_CLASS)
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest(classes = Application.class)
@@ -81,38 +73,17 @@ public class InterruptedJobTest {
 	private String expFile;
 	@Value("${planner.ntfy.date-time}")
 	private String dateTimeDelay;
-	
-
-	@Autowired
-	@Qualifier(value = GovioPlannerJob.PLANNERJOB)
-	private Job job;
+	@Value("${planner.ntfy.schedule.zone}")
+	private String zone;
 
 	@Autowired
 	private GovioPlannerBatchService govioBatchService;
-	
-	private JobLauncherTestUtils jobLauncherTestUtils;
-
-	@Autowired
-	private JobLauncher jobLauncher;
-
-	@Autowired
-	private JobRepository jobRepository;
 	
 	@Autowired
 	private ExpirationCIEFileRepository expirationCIEFileRepository;
 
 	@Autowired
 	private GovioFileProducedRepository govioFileProducedRepository;
-	
-	ExecutorService executor = Executors.newSingleThreadExecutor();
-	
-	@Autowired
-	JobOperator jobOperator;
-
-	@Autowired
-	JobExplorer jobExplorer;
-
-
 	
 	//Mock clock bean
     @MockBean
@@ -127,21 +98,15 @@ public class InterruptedJobTest {
 		expirationCIEFileRepository.deleteAll();
 	}
 
-	private void initializeJobLauncherTestUtils() throws Exception {
-		this.jobLauncherTestUtils = new JobLauncherTestUtils();
-		this.jobLauncherTestUtils.setJobLauncher(jobLauncher);
-		this.jobLauncherTestUtils.setJobRepository(jobRepository);
-		this.jobLauncherTestUtils.setJob(job);
-	}
-
 	// test per verificare che il batch nel caso giri una seconda volta nello stesso giorno, dopo aver completato con successo, non facendo nulla
 	@Test
 	void testSecondRunDoesNothingOK() throws Exception {
 		try {
+			String timezone = zone.substring(3);
+			ZoneOffset timezoneOffset = ZoneOffset.of(timezone);
 			Mockito
 			.when(clock.now())
-			.thenReturn(LocalDate.of(2023, 05, 04));
-		initializeJobLauncherTestUtils();
+			.thenReturn(OffsetDateTime.of(2023, 05, 29, 0, 0, 0, 0, timezoneOffset));
 		// file delle scadenze caricato in /test/resources
 		String routePath = expFile;
 		Path location = Path.of("/etc/govio-planner/ntfy-files/CSVTestNotifiche.csv");
@@ -168,16 +133,13 @@ public class InterruptedJobTest {
 	// test che verifica il corretto funzionamento del batch ad una seconda iterazione dopo essere fallito la prima volta per errore, e dopo che tale errore sia risolto
 	@Test
 	void testNewCSVFirstKOThenOK() throws Exception {
+		String timezone = zone.substring(3);
+		ZoneOffset timezoneOffset = ZoneOffset.of(timezone);
 		Mockito
 		.when(clock.now())
-		.thenReturn(LocalDate.of(2023, 05, 01));
-
-		initializeJobLauncherTestUtils();
-
-		final Future<JobExecution> futureBrokenJob = this.runNotifyAsync();
-			
-		final JobExecution brokenExecution = futureBrokenJob.get();
+		.thenReturn(OffsetDateTime.of(2023, 05, 30, 0, 0, 0, 0, timezoneOffset));
 		
+		JobExecution brokenExecution = govioBatchService.runPlannerJob();
 		if (brokenExecution != null) {
 			this.log.info("Il Job [{}] è rimasto in stato {}", GovioPlannerJob.PLANNERJOB, brokenExecution.getStatus());
 			Assert.assertTrue(BatchStatus.FAILED == brokenExecution.getStatus());
@@ -195,12 +157,10 @@ public class InterruptedJobTest {
 		govioFileProducedRepository.save(govioFileProducedEntity);
 		
 		Assert.assertEquals("FAILED", brokenExecution.getExitStatus().getExitCode());
-
 		// Rilancio l'esecuzione
 		JobExecution jobExecution = govioBatchService.runPlannerJob();
-		
 		Assert.assertEquals("COMPLETED", jobExecution.getStatus().toString());
-		
+
 		// file delle notifiche creato in /test/resources 
 		String fileCreatedPath = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
 		String expectedFilePath = notifyFile+"CIE_EXPIRATION.csv";
@@ -212,12 +172,4 @@ public class InterruptedJobTest {
 			if (createdFile!=null) createdFile.delete();
 		}
 	}
-	
-	
-	private Future<JobExecution> runNotifyAsync() {
-		return executor.submit( () -> {
-				return govioBatchService.runPlannerJob();
-		});
-	}
-
-	}
+}

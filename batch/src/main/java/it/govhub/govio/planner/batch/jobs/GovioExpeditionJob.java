@@ -29,7 +29,7 @@ import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 import it.govhub.govio.planner.batch.step.SendGovioFileProcessor;
 
 @Configuration
-@EnableBatchProcessing
+//@EnableBatchProcessing
 public class GovioExpeditionJob {
 	
 	public static final String GOVIO_PLANNER_EXPEDITION_JOB = "GovioPlannerExpeditionJob";

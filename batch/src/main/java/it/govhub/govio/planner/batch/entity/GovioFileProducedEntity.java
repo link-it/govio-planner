@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -35,6 +36,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import it.govhub.govregistry.commons.utils.JpaPathConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -64,6 +66,7 @@ public class GovioFileProducedEntity {
         @Enumerated(EnumType.STRING)
         private Status status;
         
+    	@Convert(converter = JpaPathConverter.class)
         @Column(name = "location", nullable = false)
         private Path location;
 

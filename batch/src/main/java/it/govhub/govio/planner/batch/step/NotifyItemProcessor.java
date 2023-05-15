@@ -18,11 +18,12 @@
  *******************************************************************************/
 package it.govhub.govio.planner.batch.step;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
@@ -41,21 +42,20 @@ import it.govhub.govio.planner.batch.bean.MyClock;
 public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration> {
 	@Value("${planner.ntfy.policy}")
 	private String policy;
-	@Value("${planner.ntfy.formatLastNotify}")
-	private String formatLastNotify;
-	@Value("${planner.ntfy.formatDueDate}")
-	private String formatDueDate;
-	@Value("${planner.ntfy.formatExpeditionDate}")
-	private String formatExpeditionDate;
+	@Value("${planner.ntfy.schedule.zone}")
+	private String zone;
+
 
 	private Logger logger = LoggerFactory.getLogger(NotifyItemProcessor.class);
 
-	private String dataUltimaNotifica;
-	private String expeditionDate;
+	private OffsetDateTime lastExecuted;
+	private OffsetDateTime expeditionDateTime;
+	private long dateLastExecutedTimestamp;
+	private long expeditionDateTimestamp;
 	
-	public NotifyItemProcessor(String dataUltimaNotifica,String expeditionDate){
-		this.dataUltimaNotifica = dataUltimaNotifica;
-		this.expeditionDate = expeditionDate;
+	public NotifyItemProcessor(long dateLastExecutedTimestamp,long expeditionDateTimestamp){
+		this.expeditionDateTimestamp = expeditionDateTimestamp;
+		this.dateLastExecutedTimestamp = dateLastExecutedTimestamp;
 	}
 
 	@Autowired
@@ -65,20 +65,19 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 	public CSVExpiration process(CSVItem item) {
 		// controlla che i valori della riga del csv siano tutti sintatticamente validi in caso contrario salta la riga
 		if (item.validate(item) == false) return null;
+		
+		String timezone = zone.substring(3);
+		this.expeditionDateTime = OffsetDateTime.ofInstant(Instant.ofEpochSecond(expeditionDateTimestamp), ZoneOffset.of(timezone));
+		this.lastExecuted = OffsetDateTime.ofInstant(Instant.ofEpochSecond(dateLastExecutedTimestamp), ZoneOffset.of(timezone));
+
 		logger.info("Riga: {} validata con successo",item);
 
-		dataUltimaNotifica = StringUtils.substringBefore(dataUltimaNotifica, 'T');
-
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(formatLastNotify);
-		LocalDate lastMessage = LocalDate.parse(dataUltimaNotifica, formatter);
-		formatter = DateTimeFormatter.ofPattern(formatDueDate);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		LocalDate dueDate = LocalDate.parse(item.getDueDate(),formatter);
-		formatter = DateTimeFormatter.ofPattern(formatExpeditionDate);
-		LocalDateTime expDate = LocalDateTime.parse(expeditionDate);
 
 		String[] splits = policy.split(",");
 		for (int i = splits.length-1; i>=0; i--) {
-			CSVExpiration res = compareDates(lastMessage, expDate, dueDate, Integer.valueOf(splits[i]),item);
+			CSVExpiration res = compareDates(lastExecuted.toLocalDate(), expeditionDateTime.toLocalDate(), dueDate, Integer.valueOf(splits[i]),item);
 			if (res != null) {
 				logger.info("Riga: {} aggiunta alle righe da inserire nel CSV",item);
 				return res;
@@ -88,15 +87,14 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 		return null;
 	}
 	
-	private CSVExpiration compareDates(LocalDate lastMessage,LocalDateTime expeditionDate, LocalDate dueDate, int days, CSVItem item) {
+	private CSVExpiration compareDates(LocalDate lastExecuted,LocalDate expeditionDate, LocalDate dueDate, int days, CSVItem item) {
 		if (
-				(lastMessage.plusDays(days).compareTo(dueDate) <= 0)
+				(lastExecuted.plusDays(days).compareTo(dueDate) <= 0)
 				&&
-				(myClock.now().plusDays(days).compareTo(dueDate) >= 0)
+				(myClock.now().toLocalDate().plusDays(days).compareTo(dueDate) >= 0)
 				)
-			return new CSVExpiration(item.getTaxCode(),expeditionDate.toString(),item.getDueDate(),item.getFullName(),item.getIdentityCardNumber(),item.getReleaseDate(),Integer.toString(days));
+			return new CSVExpiration(item.getTaxCode(),expeditionDateTime.toString(),item.getDueDate(),item.getFullName(),item.getIdentityCardNumber(),item.getReleaseDate(),Integer.toString(days));
 		return null;
 	}
-	
 }
 
