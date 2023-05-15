@@ -18,9 +18,6 @@
  *******************************************************************************/
 package it.govhub.govio.planner.batch.step;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
@@ -34,8 +31,8 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 
+import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 /*
  * 
  * Tasklet che ha il compito di individuare nel database la data in cui è girato l'ultima volta il batch e di calcolare la data di spedizione dei messaggi di notifica.
@@ -47,31 +44,27 @@ public class LookForLastDateTasklet implements Tasklet {
 	private String lastDate;
 	@Value("${planner.ntfy.date-time}")
 	private String dateTimeDelay;
+	@Value("${planner.ntfy.schedule.zone}")
+	private String zone;
 
 	@Autowired
 	GovioFileProducedRepository govioFileProducedRepository;
 
 	private Logger logger = LoggerFactory.getLogger(LookForLastDateTasklet.class);
 
-
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
 		OffsetDateTime date = govioFileProducedRepository.lastDateNotifyFile();
 		ExecutionContext jobExecutionContext = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
-		jobExecutionContext.put("date",(date==null)? lastDate: date.toString());
+		String timezone = zone.substring(3);
+		OffsetDateTime epoch = OffsetDateTime.parse(lastDate+"T00:00:00"+timezone);
+		jobExecutionContext.put("date",(date==null)? epoch.toEpochSecond() : date.toEpochSecond());
 		logger.info("Data in cui è girato il batch l'ultima volta: {}",(date==null)? lastDate: date.toString());
-		LocalDateTime expeditionDate;
-		// se il parametro è null
-		// se sono passate le 12:00 metto data di spedizione a domani a mezzogiorno, sennò oggi a mezzogiorno
-		LocalTime noon = LocalTime.NOON;
-		LocalDate today = LocalDate.now(ZoneId.of("Europe/Berlin"));
-		expeditionDate = LocalDateTime.of(today, noon);
-		if (LocalTime.now().getHour()>12) expeditionDate = expeditionDate.plusDays(1);
-		// in caso il parametro dateTimeDelay non sia vuoto, viene settato un ritardo alla spedizione del messaggio
+		ZoneId idZone = ZoneId.of(timezone);
+		OffsetDateTime expeditionDate = OffsetDateTime.now(idZone);
 		if (!dateTimeDelay.isEmpty()) expeditionDate.plusHours(Long.valueOf(dateTimeDelay));
-		jobExecutionContext.put("expeditionDate",expeditionDate.toString());
+		jobExecutionContext.put("expeditionDate",expeditionDate.toEpochSecond());
 		logger.info("Expedition date: {}",expeditionDate);
-
 		return null;
 	}
 }
