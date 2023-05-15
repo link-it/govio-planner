@@ -19,7 +19,11 @@
 package it.govhub.govio.planner.test.batch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.time.LocalDate;
@@ -27,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -44,11 +49,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
 import it.govhub.govio.planner.batch.*;
 import it.govhub.govio.planner.batch.bean.*;
-import it.govhub.govio.planner.batch.config.GovioPlannerConfig;
+import it.govhub.govio.planner.batch.jobs.GovioPlannerConfig;
 import it.govhub.govio.planner.batch.entity.ExpirationCIEFileEntity;
 import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity;
 import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity.Status;
@@ -57,6 +64,7 @@ import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 import it.govhub.govio.planner.batch.service.*;
 
 @ActiveProfiles("test")
+@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest(classes = Application.class)
  class TestBatch {
 	@Value("${planner.ntfy.csv-dir}")
@@ -65,7 +73,8 @@ import it.govhub.govio.planner.batch.service.*;
 	private String expFile;
 	@Value("${planner.ntfy.date-time}")
 	private String dateTimeDelay;
-	
+	@Value("${planner.ntfy.schedule.zone}")
+	private String zone;
 
 
 	private JobLauncherTestUtils jobLauncherTestUtils;
@@ -104,11 +113,13 @@ import it.govhub.govio.planner.batch.service.*;
 	void setUp(){
 		govioFileProducedRepository.deleteAll();
 		expirationCIEFileRepository.deleteAll();
-		// mock del metodo LocalDate.now() in modo da far restituire il giorno 05/05/2023
+		// mock del metodo OffsetDateTime.now() in modo da far restituire il giorno 05/05/2023 alle ore 12:00
+		String timezone = zone.substring(3);
+		ZoneOffset timezoneOffset = ZoneOffset.of(timezone);
 		Mockito
 		.when(clock.now())
-		.thenReturn(LOCAL_DATE);
-	}
+		.thenReturn(OffsetDateTime.of(LOCAL_DATE,LocalTime.NOON, timezoneOffset));
+		}
 
 	private void initializeJobLauncherTestUtils() throws Exception {
 		this.jobLauncherTestUtils = new JobLauncherTestUtils();
@@ -131,7 +142,7 @@ import it.govhub.govio.planner.batch.service.*;
 		initializeJobLauncherTestUtils();
 		String routePath = expFile;
 		File f = new File(routePath+"file_assente.csv");
-		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(OffsetDateTime.now()).location(f.getAbsolutePath()).name("CSVTestNotifiche.csv").build();
+		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(clock.now()).location(f.getAbsolutePath()).name("CSVTestNotifiche.csv").build();
 		GovioFileProducedEntity govioFileProducedEntity = GovioFileProducedEntity.builder().creationDate(lastDate).expirationFile(expirationCIEFileEntity).location("/etc/govio-planner/ntfy-files/CSVTestNotifiche.csv").status(Status.CREATED).build();
 		expirationCIEFileRepository.save(expirationCIEFileEntity);
 		govioFileProducedRepository.save(govioFileProducedEntity);
@@ -152,7 +163,7 @@ import it.govhub.govio.planner.batch.service.*;
 		String routePath = expFile;
 		// File CSV composto da due righe e in cui la seconda ha il nome sintatticamente errato
 		File f = new File(routePath+"CIE_scadenza_KO.csv");
-		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(OffsetDateTime.now()).location(f.getAbsolutePath()).name("CSVTestNotifiche.csv").build();
+		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(clock.now()).location(f.getAbsolutePath()).name("CSVTestNotifiche.csv").build();
 		GovioFileProducedEntity govioFileProducedEntity =  GovioFileProducedEntity.builder().creationDate(lastDate).expirationFile(expirationCIEFileEntity).location("/etc/govio-planner/ntfy-files/CSVTestNotifiche.csv").status(Status.CREATED).build();
 		expirationCIEFileRepository.save(expirationCIEFileEntity);
 		govioFileProducedRepository.save(govioFileProducedEntity);
@@ -168,19 +179,24 @@ import it.govhub.govio.planner.batch.service.*;
 	    expectedFile = new File(notifyFile+"CIE_EXPIRATION.csv");
    	    FileUtils.copyFile(template,expectedFile);
 		byte[] buff = Files.readAllBytes(expectedFile.toPath());
-		// calcolo dell'expedition date
-		LocalDateTime expeditionDate;
-		// se sono passate le 12:00 metto data di spedizione a domani a mezzogiorno, sennò oggi a mezzogiorno
-		LocalTime noon = LocalTime.NOON;
-		LocalDate today = LocalDate.now(ZoneId.of("Europe/Berlin"));
-		expeditionDate = LocalDateTime.of(today, noon);
-		if (LocalTime.now().getHour()>12) expeditionDate = expeditionDate.plusDays(1);
-		// in caso il parametro dateTimeDelay non sia vuoto, viene settato un ritardo alla spedizione del messaggio
-		if (!dateTimeDelay.isEmpty()) expeditionDate.plusHours(Long.valueOf(dateTimeDelay));
-		// sostituisco il placeholder del valore dell'expedition date con il valore corretto essendo l'expedition date calcolata in base alla data corrente
+		// leggo dal file csv i valori della colonna expedition date in quanto esser
+		boolean isFirstLine = true;
+        String expeditionDate = null;
 		String s = new String(buff, Charset.defaultCharset());
-		s = s.replaceAll(Pattern.quote("$expedition_date"), expeditionDate.toString());
-		Files.write(expectedFile.toPath(), s.getBytes());
+        BufferedReader br = new BufferedReader(new FileReader(createdFile));
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (isFirstLine) {
+                    isFirstLine = false;
+                    continue;
+                }
+                String[] columns = line.split(";");
+                expeditionDate = columns[1];
+        		// sostituisco il placeholder del valore dell'expedition date con il valore del file prodotto dal test
+        		s = s.replaceAll(Pattern.quote("$expedition_date"), expeditionDate);
+        		Files.write(expectedFile.toPath(), s.getBytes());
+            }
+            br.close();
 		assertEquals(true,FileUtils.contentEquals(expectedFile,createdFile));
 		} finally {
 			if (createdFile!=null) createdFile.delete();
@@ -194,40 +210,51 @@ import it.govhub.govio.planner.batch.service.*;
 		File createdFile=null;
 		File expectedFile=null;
 		try {
-			initializeJobLauncherTestUtils();
+		// soluzione: sostituisco expedition date in quello creato, sostituisco quel valore in quella colonna
+		 			initializeJobLauncherTestUtils();
 		// file delle scadenze caricato in /test/resources
+
 		String routePath = expFile;
 		File f = new File(routePath+"CIE_scadenza_tracciato.csv");
-		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(OffsetDateTime.now()).location(f.getAbsolutePath()).name("CSVTestNotifiche.csv").build();
+		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(clock.now()).location(f.getAbsolutePath()).name("CSVTestNotifiche.csv").build();
 		GovioFileProducedEntity govioFileProducedEntity =  GovioFileProducedEntity.builder().creationDate(lastDate).expirationFile(expirationCIEFileEntity).location("/etc/govio-planner/ntfy-files/CSVTestNotifiche.csv").status(Status.CREATED).build();
 		expirationCIEFileRepository.save(expirationCIEFileEntity);
 		govioFileProducedRepository.save(govioFileProducedEntity);
+
 		JobExecution jobExecution = jobLauncherTestUtils.launchJob();
 		Assert.assertEquals("COMPLETED", jobExecution.getExitStatus().getExitCode());
+		
 		// file delle notifiche creato in /test/resources 
 		String fileCreatedPath = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
 		String expectedFilePath = notifyFile+"CIE_EXPIRATION_TEMPLATE.csv";
 		createdFile = new File(fileCreatedPath);
+		
 		// template del file su che mi aspetto di produrre caricato in /test/resources
 		// lo copio, così da non modificare il template da usare per i test
 	    File template = new File(expectedFilePath);
 	    expectedFile = new File(notifyFile+"CIE_EXPIRATION.csv");
    	    FileUtils.copyFile(template,expectedFile);
 		byte[] buff = Files.readAllBytes(expectedFile.toPath());
-		// calcolo dell'expedition date
-		LocalDateTime expeditionDate;
-		// se sono passate le 12:00 metto data di spedizione a domani a mezzogiorno, sennò oggi a mezzogiorno
-		LocalTime noon = LocalTime.NOON;
-		LocalDate today = LocalDate.now(ZoneId.of("Europe/Berlin"));
-		expeditionDate = LocalDateTime.of(today, noon);
-		if (LocalTime.now().getHour()>12) expeditionDate = expeditionDate.plusDays(1);
-		// in caso il parametro dateTimeDelay non sia vuoto, viene settato un ritardo alla spedizione del messaggio
-		if (!dateTimeDelay.isEmpty()) expeditionDate.plusHours(Long.valueOf(dateTimeDelay));
-		// sostituisco il placeholder del valore dell'expedition date con il valore corretto
+		// leggo dal file csv i valori della colonna expedition date in quanto esser
+		boolean isFirstLine = true;
+        String expeditionDate = null;
 		String s = new String(buff, Charset.defaultCharset());
-		s = s.replaceAll(Pattern.quote("$expedition_date"), expeditionDate.toString());
-		Files.write(expectedFile.toPath(), s.getBytes());
+        BufferedReader br = new BufferedReader(new FileReader(createdFile));
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (isFirstLine) {
+                    isFirstLine = false;
+                    continue;
+                }
+                String[] columns = line.split(";");
+                expeditionDate = columns[1];
+        		// sostituisco il placeholder del valore dell'expedition date con il valore del file prodotto dal test
+        		s = s.replaceAll(Pattern.quote("$expedition_date"), expeditionDate);
+        		Files.write(expectedFile.toPath(), s.getBytes());
+            }
+        br.close();
 		assertEquals(true,FileUtils.contentEquals(expectedFile,createdFile));
+
 		} finally {
 			if (createdFile!=null) createdFile.delete();
 			if (expectedFile!=null) expectedFile.delete();
@@ -246,7 +273,7 @@ import it.govhub.govio.planner.batch.service.*;
 		String routePath = expFile;
 		File f = new File(routePath+"CIE_scadenza_InputVOID.csv");
 		f.createNewFile();
-		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(OffsetDateTime.now()).location(f.getAbsolutePath()).name("CSVTestNotifiche.csv").build();
+		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(clock.now()).location(f.getAbsolutePath()).name("CSVTestNotifiche.csv").build();
 		GovioFileProducedEntity govioFileProducedEntity =  GovioFileProducedEntity.builder().creationDate(lastDate).expirationFile(expirationCIEFileEntity).location("/etc/govio-planner/ntfy-files/CSVTestNotifiche.csv").status(Status.CREATED).build();
 		expirationCIEFileRepository.save(expirationCIEFileEntity);
 		govioFileProducedRepository.save(govioFileProducedEntity);
