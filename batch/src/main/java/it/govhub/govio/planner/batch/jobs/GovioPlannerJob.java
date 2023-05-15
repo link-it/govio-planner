@@ -18,11 +18,10 @@
  *******************************************************************************/
 package it.govhub.govio.planner.batch.jobs;
 
-
 import java.io.IOException;
 import java.io.Writer;
-import java.time.Clock;
 import java.time.LocalDate;
+
 import javax.persistence.EntityManager;
 
 import org.springframework.batch.core.Job;
@@ -49,10 +48,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
-import it.govhub.govio.planner.batch.repository.*;
-import it.govhub.govio.planner.batch.step.*;
-import it.govhub.govio.planner.batch.bean.*;
 
+import it.govhub.govio.planner.batch.bean.CSVExpiration;
+import it.govhub.govio.planner.batch.bean.CSVItem;
+import it.govhub.govio.planner.batch.repository.ExpirationCIEFileRepository;
+import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
+import it.govhub.govio.planner.batch.step.LookForFileTasklet;
+import it.govhub.govio.planner.batch.step.LookForLastDateTasklet;
+import it.govhub.govio.planner.batch.step.NotifyItemProcessor;
 
 @Configuration
 @EnableBatchProcessing
@@ -134,7 +137,7 @@ public class GovioPlannerJob {
 	    //Set output file location
 	    writer.setResource(new FileSystemResource(filename));
 	    
-	    //All job repetitions should "append" to same output file
+	    //All job repetitions should "append" to same output file TODO TESTA
 	    writer.setAppendAllowed(true);
 
 	    //Name field values sequence based on object properties 
@@ -157,8 +160,10 @@ public class GovioPlannerJob {
 	@Bean
 	@StepScope
 	@Qualifier("notifyItemProcessor")
-	public ItemProcessor<CSVItem,CSVExpiration> notifyItemProcessor(@Value("#{jobExecutionContext[date]}") String date,
-																	@Value("#{jobExecutionContext[expeditionDate]}") String expeditionDate) {
+	public ItemProcessor<CSVItem,CSVExpiration> notifyItemProcessor(
+			@Value("#{jobExecutionContext[date]}") String date,
+			@Value("#{jobExecutionContext[expeditionDate]}") String expeditionDate) {
+		
 	 		return new NotifyItemProcessor(date,expeditionDate );
 	}
 

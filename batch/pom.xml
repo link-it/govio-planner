@@ -110,6 +110,18 @@
 			<groupId>javax.annotation</groupId>
 			<artifactId>javax.annotation-api</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-annotations</artifactId>
+			<version>${swagger-annotations.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openapitools</groupId>
+			<artifactId>jackson-databind-nullable</artifactId>
+			<version>${jackson.databind.nullable.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.google.code.findbugs</groupId>
@@ -164,6 +176,41 @@
 					<forceJavacCompilerUse>true</forceJavacCompilerUse>
 				</configuration>
 			</plugin>
+			
+				<plugin>
+				<groupId>org.openapitools</groupId>
+				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<version>${openapi.tool.codegen.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<id>generate-sources-client-govio-v1</id>
+						<phase>generate-sources</phase>
+						<configuration>
+							<inputSpec>${project.basedir}/src/main/resources/govio-api-backoffice.yaml</inputSpec>
+							<generatorName>java</generatorName>
+							<configOptions>
+								<booleanGetterPrefix>is</booleanGetterPrefix>
+								<dateLibrary>java8</dateLibrary>
+								<library>resttemplate</library>
+								<serializationLibrary>jackson</serializationLibrary>
+								<sourceFolder>generated-sources/java/</sourceFolder>
+								<apiPackage>it.govhub.govio.v1.api</apiPackage>
+								<invokerPackage>it.govhub.govio.v1.api.impl</invokerPackage>
+								<modelPackage>it.govhub.govio.v1.api.beans</modelPackage>
+								<useAnnotatedBasePath>true</useAnnotatedBasePath>
+								<useBeanValidation>false</useBeanValidation>
+							</configOptions>
+							<output>${project.basedir}/target</output>
+							<generateApiTests>false</generateApiTests>
+							<generateModelTests>false</generateModelTests>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>

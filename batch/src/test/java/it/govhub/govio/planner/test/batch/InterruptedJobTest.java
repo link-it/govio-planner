@@ -21,6 +21,7 @@ package it.govhub.govio.planner.test.batch;
 import static org.junit.Assert.assertThrows;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.concurrent.ExecutorService;
@@ -143,9 +144,10 @@ public class InterruptedJobTest {
 		initializeJobLauncherTestUtils();
 		// file delle scadenze caricato in /test/resources
 		String routePath = expFile;
+		Path location = Path.of("/etc/govio-planner/ntfy-files/CSVTestNotifiche.csv");
 		File f = new File(routePath+"CIE_scadenza_tracciato.csv");
 		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(OffsetDateTime.now()).location(f.getAbsolutePath()).name("CSVTestNotifiche.csv").build();
-		GovioFileProducedEntity govioFileProducedEntity =  GovioFileProducedEntity.builder().creationDate(OffsetDateTime.parse("2007-12-03T10:15:30+01:00")).expirationFile(expirationCIEFileEntity).location("/etc/govio-planner/ntfy-files/CSVTestNotifiche.csv").status(Status.CREATED).build();
+		GovioFileProducedEntity govioFileProducedEntity =  GovioFileProducedEntity.builder().creationDate(OffsetDateTime.parse("2007-12-03T10:15:30+01:00")).expirationFile(expirationCIEFileEntity).location(location).status(Status.SCHEDULED).build();
 		expirationCIEFileRepository.save(expirationCIEFileEntity);
 		govioFileProducedRepository.save(govioFileProducedEntity);
 
@@ -186,8 +188,9 @@ public class InterruptedJobTest {
 		// file delle scadenze caricato in /test/resources
 		String routePath = expFile;
 		File f = new File(routePath+"CIE_scadenza_tracciato.csv");
+		Path location = Path.of("/etc/govio-planner/ntfy-files/CSVTestNotifiche.csv");
 		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(OffsetDateTime.now()).location(f.getAbsolutePath()).name("CSVTestNotifiche.csv").build();
-		GovioFileProducedEntity govioFileProducedEntity =  GovioFileProducedEntity.builder().creationDate(OffsetDateTime.parse("2007-12-03T10:15:30+01:00")).expirationFile(expirationCIEFileEntity).location("/etc/govio-planner/ntfy-files/CSVTestNotifiche.csv").status(Status.CREATED).build();
+		GovioFileProducedEntity govioFileProducedEntity =  GovioFileProducedEntity.builder().creationDate(OffsetDateTime.parse("2007-12-03T10:15:30+01:00")).expirationFile(expirationCIEFileEntity).location(location).status(Status.SCHEDULED).build();
 		expirationCIEFileRepository.save(expirationCIEFileEntity);
 		govioFileProducedRepository.save(govioFileProducedEntity);
 		
