@@ -1,0 +1,1040 @@
+openapi: 3.0.3
+
+info:
+  title: GovHub Commons API - OpenAPI 3.0
+  x-summary: GovHub Commons API
+  description: This API Describes the common beans of the GovHub ecosystem
+  x-api-id: govhub-commons
+  termsOfService: TODO
+  version: 1.0.1
+  contact:
+    name: TODO
+    email: TODO@TODO.it
+
+  license:
+    name: Apache 2.0 ( TODO )
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+components:
+
+   parameters:
+   
+      user_id:
+         name: id
+         in: path
+         required: true
+         schema:
+            $ref: "#/components/schemas/UserId"
+  
+      organization_id:
+         name: id
+         in: path
+         required: true
+         schema:
+            $ref: "#/components/schemas/OrganizationId"
+   
+      service_id:
+         name: id
+         in: path
+         required: true
+         schema:
+            $ref: "#/components/schemas/ServiceId"
+            
+      enabled_query:
+         name: enabled
+         in: query
+         description: filter by status.
+         required: false
+         schema:
+            type: boolean
+            
+      user_ordering_query:
+         name: sort
+         in: query
+         description: Sorting field.
+         required: true
+         schema:
+            $ref: "#/components/schemas/UserOrdering"                   
+   
+      sort_direction_query:
+         name: sort_direction
+         in: query
+         description: Direction Sorting field.
+         required: true
+         schema:
+            $ref: "#/components/schemas/Direction"
+            
+      limit:
+         name: limit
+         in: query
+         description: Max number of provided items.
+         required: false
+         schema:
+           type: integer
+           format: int32
+           minimum: 1
+           maximum: 100
+           
+      offset:
+         name: offset
+         in: query
+         description: offset (zero-based) of indexed results.
+         required: false
+         schema:
+           type: integer
+           format: int64
+           default: 0
+           minimum: 0
+           maximum: 9223372036854775807
+        
+      q_query:
+         name: q
+         in: query
+         description: generic query.
+         required: false
+         schema:
+            $ref: "#/components/schemas/GenericSearchString"
+            
+      authorization_ordering_query:
+         name: sort
+         in: query
+         description: Sorting field.
+         required: true
+         schema:
+            $ref: "#/components/schemas/AuthorizationOrdering"
+            
+      organization_ordering_query:
+         name: sort
+         in: query
+         description: Sorting field.
+         required: true
+         schema:
+            $ref: "#/components/schemas/OrganizationOrdering"
+            
+      service_ordering_query:            
+         name: sort
+         in: query
+         description: Sorting field.
+         required: true
+         schema:
+            $ref: "#/components/schemas/ServiceOrdering"
+            
+      with_roles:
+         name: with_roles
+         in: query
+         description: Retrieve the items for whose the principal has the roles.
+         schema:
+            type: array
+            items:
+               type: string
+               pattern: .*
+               maxLength: 255                                       
+
+   responses:
+   
+      '201Created':
+         description: Resource created.
+         headers:
+           Location:
+             $ref: "#/components/headers/Location"
+           Cache-Control:
+              $ref: "#/components/headers/Cache-Control"
+           X-RateLimit-Limit:
+              $ref: "#/components/headers/X-RateLimit-Limit"
+           X-RateLimit-Remaining:
+              $ref: "#/components/headers/X-RateLimit-Remaining"
+           X-RateLimit-Reset:
+             $ref: "#/components/headers/X-RateLimit-Reset"
+             
+
+      '400BadRequest':
+         description: Bad Request.
+         content:
+           application/problem+json:
+             schema:
+               $ref: "#/components/schemas/Problem"
+             example:
+                detail: Missing required field. 
+                status: 400
+                title: Bad Request
+                type: https://www.rfc-editor.org/rfc/rfc9110.html#name-400-bad-request
+                               
+               
+      '401Unauthorized':
+         description: Required credentials missing.
+         content:
+           application/problem+json:
+             schema:
+               $ref: "#/components/schemas/Problem"
+             example:
+                detail: Invalid Credentials  
+                status: 401
+                title: Unauthorized
+                type: https://www.rfc-editor.org/rfc/rfc9110.html#name-401-unauthorized               
+               
+      '403Forbidden':
+         description: Agent not authorized for the operation.
+         content:
+           application/problem+json:
+             schema:
+               $ref: "#/components/schemas/Problem"
+             example:
+                detail: User not authorized for the operation.  
+                status: 403
+                title: Forbidden
+                type: https://www.rfc-editor.org/rfc/rfc9110.html#name-403-forbidden               
+               
+      '404NotFound':
+         description: Not Found.
+         content:
+           application/problem+json:
+             schema:
+               $ref: "#/components/schemas/Problem"
+             example:
+                detail: Resource not found.  
+                status: 404
+                title: Not Found
+                type: https://www.rfc-editor.org/rfc/rfc9110.html#name-404-not-found               
+               
+      '409Conflict':
+         description: Conflict (The entity already exists).
+         content:
+           application/problem+json:
+             schema:
+               $ref: "#/components/schemas/Problem"
+             example:
+                detail: Resource with the same id already present.  
+                status: 409
+                title: Conflict
+                type: https://www.rfc-editor.org/rfc/rfc9110.html#name-409-conflict               
+               
+      '429TooManyRequests':
+         description: Too many requests.
+         headers:
+           Retry-After:
+             $ref: "#/components/headers/Retry-After"
+           X-RateLimit-Limit:
+             $ref: "#/components/headers/X-RateLimit-Limit"
+           X-RateLimit-Remaining:
+             $ref: "#/components/headers/X-RateLimit-Remaining"
+           X-RateLimit-Reset:
+             $ref: "#/components/headers/X-RateLimit-Reset"
+         content:
+           application/problem+json:
+             schema:
+               $ref: "#/components/schemas/Problem"
+             example:
+                detail: User has sent too many requests in a given amount of time.
+                status: 429
+                title: Too Many Requests
+                type: https://www.rfc-editor.org/rfc/rfc6585#section-4                              
+               
+      '503ServiceUnavailable':
+         description: Service Unavailable.
+         headers:
+           Retry-After:
+             $ref: "#/components/headers/Retry-After"
+         content:
+           application/problem+json:
+             schema:
+               $ref: "#/components/schemas/Problem"
+             example:
+                detail: Request Can't be fulfilled at the moment.  
+                status: 503
+                title: Service Unavailable
+                type: https://www.rfc-editor.org/rfc/rfc9110.html#name-503-service-unavailable                   
+               
+      'ResponseDefault':
+         description: Unexpected error.
+         content:
+           application/problem+json:
+             schema:
+               $ref: "#/components/schemas/Problem"
+               
+   headers: 
+      Location:
+         description: >
+             Header Location inserted in a response for a succesful POST request (201)
+             The value is a link that points to the created object.
+         schema:
+           type: string
+           format: url
+           maxLength: 255
+           
+      Cache-Control:
+        description: Management of objects cache, no-cache is the only supported option.
+        schema:          
+          type: string
+          pattern: ^[\w, -=]+$
+          maxLength: 255
+          
+      Retry-After:
+         description: "Retry after a window of n seconds. See https://tools.ietf.org/html/rfc7231#section-7.1.3"
+         schema:
+           type: integer
+           format: int32
+           minimum: 0
+           maximum: 2147483647
+           
+      X-RateLimit-Limit:
+         description: Maximum number of allowed requests in the current time window.
+         schema:
+           type: integer
+           format: int32
+           minimum: 0
+           maximum: 2147483647
+           
+      X-RateLimit-Remaining:
+         description: Number of remaining requests in the current time window.
+         schema:
+           type: integer
+           format: int32
+           minimum: 0
+           maximum: 2147483647
+           
+      X-RateLimit-Reset:
+         description: Seconds left until the next time window.
+         schema:
+           type: integer
+           format: int32
+           minimum: 0
+           maximum: 2147483647
+
+
+   schemas:
+   
+      Profile:
+           type: object
+           additionalProperties: false
+           properties:
+              authorizations:
+                 type: array
+                 items:
+                    $ref: "#/components/schemas/Authorization"
+                 minItems: 0
+                 maxItems: 2147483647
+              principal:
+                  type: string
+                  maxLength: 255
+                  pattern: ^[\w_\-\.]+$
+                  example: user-1
+              full_name:
+                  type: string
+                  maxLength: 255               
+                  pattern: ^.*$
+                  example: Antonio Giscardi
+              email:
+                  type: string
+                  format: email
+                  maxLength: 255
+              enabled:
+                  type: boolean
+              id:
+                 type: integer
+                 format: int64
+                 minimum: 0
+                 maximum: 9223372036854775807
+                 example: 1
+                 description: User identifier.
+           required:
+            - principal
+            - full_name
+            - enabled            
+             - id
+             
+      UserCreate:
+         type: object
+         additionalProperties: false
+         properties:
+            principal:
+               type: string
+               maxLength: 255
+               pattern: ^[\w_\-\.]+$
+               example: user-1
+            full_name:
+               type: string
+               maxLength: 255               
+               pattern: ^.*$
+               example: Antonio Giscardi
+            email:
+               type: string
+               format: email
+               maxLength: 255
+            enabled:
+               type: boolean
+         required:
+            - principal
+            - full_name
+            - enabled            
+         
+      User:         
+         allOf:
+            - $ref: "#/components/schemas/UserCreate"
+            - type: object         
+              additionalProperties: false
+              required:
+                - id
+              properties:
+                  id:
+                     $ref: "#/components/schemas/UserId"
+                  _links:
+                     type: object
+                     additionalProperties: false
+                     properties:
+                        self:
+                           $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                        avatar:
+                           $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                     example:
+                        self:
+                           href: "https://govhub.it/govregistry/users/1"
+                        avatar:
+                           href: "https://gravatar.com/avatar/md5/d2c457c9c97c9e4e2226317fe5685892/s=100&d=identicon"                          
+                     
+      OrganizationData:
+         type: object
+         additionalProperties: false
+         required:
+           - tax_code
+           - legal_name        
+         properties:
+           tax_code:
+              $ref: "#/components/schemas/TaxCode"
+           legal_name:
+              $ref: "#/components/schemas/LegalName"
+           office_at:
+             type: string
+             maxLength: 120
+             pattern: ^.*$
+             description: Building Location.
+             example: Local Cohort
+           office_address:
+             type: string
+             maxLength: 120
+             pattern: ^.*$
+             description: Office Building Address.
+             example: 44 Rowling Street
+           office_address_details:
+             type: string
+             maxLength: 120
+             pattern: ^.*$
+             description: Second Office Building Address Row.
+             example: Intern N. 6
+           office_zip:
+             type: string
+             maxLength: 120
+             pattern: ^.*$
+             description: Postal Code.
+             example: "984356" 
+           office_municipality:
+             type: string
+             maxLength: 120
+             pattern: ^.*$
+             description: Municipality.
+             example: London
+           office_municipality_details:
+             type: string
+             maxLength: 120
+             pattern: ^.*$
+             description: Location or Country Fraction. 
+             example: Harlem
+           office_province:
+             type: string
+             maxLength: 120
+             pattern: ^.*$
+             description: Province.
+             example: London
+           office_foreign_state:
+             type: string
+             maxLength: 120
+             pattern: ^.*$
+             description: Foreign State Name.
+             example: UK
+           office_phone_number:
+             $ref: "#/components/schemas/PhoneNumber"
+           office_email_address:
+              $ref: "#/components/schemas/Email"
+           office_pec_address:
+              $ref: "#/components/schemas/Email"                     
+                     
+      OrganizationCreate:
+        allOf:
+          - $ref: "#/components/schemas/OrganizationData"
+
+      Organization:
+        allOf:
+          - $ref: "#/components/schemas/OrganizationData" 
+          - type: object
+            additionalProperties: false
+            required:
+              - id
+            properties:
+              id:
+                $ref: "#/components/schemas/OrganizationId"
+              _links:
+                 type: object
+                 additionalProperties: false
+                 properties:
+                    self:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                    logo:
+                        $ref: "govhub-api-commons.yaml#/components/schemas/Link"                           
+                    logo-miniature:
+                        $ref: "govhub-api-commons.yaml#/components/schemas/Link"                           
+                 example:
+                    self: 
+                       href: "https://govhub.it/govregistry/organizations/1" 
+                    logo: 
+                       href: "https://govhub.it/govregistry/organizations/1/logo"
+                    logo-miniature: 
+                       href: "https://govhub.it/govregistry/organizations/1/logo-miniature"                                        
+                
+      OrganizationItem:
+        allOf:
+          - $ref: "#/components/schemas/OrganizationData" 
+          - type: object
+            additionalProperties: false
+            required:
+              - id
+            properties:
+              id:
+                $ref: "#/components/schemas/OrganizationId"
+              _links:
+                 type: object
+                 additionalProperties: false
+                 properties:
+                    self:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                    logo:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                    logo_miniature:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                 example:
+                    self: 
+                       href: "https://govhub.it/govregistry/organizations/1"                
+                    logo: 
+                       href: "https://govhub.it/govregistry/organizations/1/logo"
+                    logo_miniature: 
+                       href: "https://govhub.it/govregistry/organizations/logo_miniature"
+                                                                     
+                
+      ServiceCreate:
+         type: object
+         additionalProperties: false
+         required:
+            - service_name
+         properties:
+            service_name:
+               $ref: "#/components/schemas/ServiceName"
+            description:
+              type: string
+              pattern: '[\s\S]*'
+              maxLength: 4096
+              example: Service for customer management.
+              
+      Service:
+            type: object
+            additionalProperties: false
+            required:
+               - service_name
+               - id
+            properties:
+               service_name:
+                  $ref: "#/components/schemas/ServiceName"
+               description:
+                 type: string
+                 pattern: '[\s\S]*'
+                 maxLength: 4096
+                 example: Service for customer management.               
+               id:
+                  $ref: "#/components/schemas/ServiceId"
+               _links:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                     self:
+                        $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                     logo:
+                        $ref: "govhub-api-commons.yaml#/components/schemas/Link"                           
+                     logo-miniature:
+                        $ref: "govhub-api-commons.yaml#/components/schemas/Link"                           
+                  example:
+                    self: 
+                       href: "https://govhub.it/govregistry/services/1" 
+                    logo: 
+                       href: "https://govhub.it/govregistry/services/1/logo"
+                    logo-miniature: 
+                       href: "https://govhub.it/govregistry/services/1/logo-miniature"                                                    
+                          
+                        
+                     
+      OrganizationOrdering:
+         type: string
+         enum:
+            - unsorted
+            - legal_name
+            - id
+         default: id          
+                        
+      ServiceOrdering:
+         type: string
+         enum:
+            - unsorted
+            - id
+            - service_name      
+         default: id
+               
+      UserList:
+         allOf:
+            - $ref: "#/components/schemas/List"
+            - type: object
+              properties:              
+                 items:
+                    type: array
+                    items:
+                       $ref: "#/components/schemas/User"
+                    minItems: 0
+                    maxItems: 2147483647
+              required:
+                 - items 
+              additionalProperties: false
+              
+      Link:
+            type: object
+            additionalProperties: false
+            properties:
+              href:
+                type: string
+              hreflang:
+                type: string
+              title:
+                type: string
+              type:
+                type: string
+              deprecation:
+                type: string
+              profile:
+                type: string
+              name:
+                type: string
+              templated:
+                type: boolean                        
+
+      OrganizationList:
+         allOf:
+            - $ref: "#/components/schemas/List"
+            - type: object
+              properties:              
+                 items:
+                    type: array
+                    items:
+                       $ref: "#/components/schemas/OrganizationItem"
+                    minItems: 0
+                    maxItems: 2147483647
+              required:
+                 - items 
+              additionalProperties: false
+              
+
+      ServiceList:
+         allOf:
+            - $ref: "#/components/schemas/List"
+            - type: object
+              properties:              
+                 items:
+                    type: array
+                    items:
+                       $ref: "#/components/schemas/ServiceAuthItem"
+                    minItems: 0
+                    maxItems: 2147483647
+              required:
+                 - items 
+              additionalProperties: false                         
+             
+      Authorization:
+         type: object
+         additionalProperties: false
+         required:
+            - id
+            - role
+         properties:
+            id:
+               $ref: "#/components/schemas/AuthorizationId"
+            role:
+               $ref: "#/components/schemas/Role"
+            organizations:
+               type: array
+               items:
+                  $ref: "#/components/schemas/OrganizationAuthItem"
+               minItems: 0
+               maxItems: 2147483647
+            services:
+               type: array
+               items:
+                  $ref: "#/components/schemas/ServiceAuthItem"
+               minItems: 0
+               maxItems: 2147483647
+            expiration_date:
+               type: string
+               format: date-time
+               
+      OrganizationAuthItem:
+         type: object
+         additionalProperties: false
+         required:
+            - id
+            - legal_name
+            - tax_code
+         properties:
+            id:
+               $ref: "#/components/schemas/OrganizationId"
+            legal_name:
+               $ref: "#/components/schemas/LegalName"
+            tax_code:
+               $ref: "#/components/schemas/TaxCode"
+            _links:
+                 type: object
+                 additionalProperties: false
+                 properties:
+                    self:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                    logo:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                    logo_miniature:
+                       $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                 example:
+                    self: 
+                       href: "https://govhub.it/govregistry/organizations/1"                
+                    logo: 
+                       href: "https://govhub.it/govregistry/organizations/1/logo"
+                    logo_miniature: 
+                       href: "https://govhub.it/govregistry/organizations/logo_miniature"               
+               
+               
+      UserId:
+         type: integer
+         format: int64
+         minimum: 0
+         maximum: 9223372036854775807
+         example: 1
+         description: User identifier.
+         
+      OrganizationId:
+         type: integer
+         format: int64
+         minimum: 0
+         maximum: 9223372036854775807
+         example: 1
+         description: Organization identifier. 
+      
+      
+      AuthorizationId:
+         type: integer
+         format: int64
+         minimum: 0
+         maximum: 9223372036854775807
+         example: 1
+         description: Authorization identifier.
+         
+      ServiceId:
+         type: integer
+         format: int64
+         minimum: 0
+         maximum: 9223372036854775807
+         example: 1
+         description: Service identifier.          
+         
+      ServiceAuthItem:
+         type: object
+         additionalProperties: false
+         properties:
+            id: 
+               $ref: "#/components/schemas/ServiceId"         
+            service_name:
+               $ref: "#/components/schemas/ServiceName"
+            description:
+              type: string
+              pattern: .*
+              maxLength: 4096
+              example: Service for customer management.
+            _links:
+              type: object
+              additionalProperties: false
+              properties:
+                 self:
+                    $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                 logo:
+                    $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+                 logo_miniature:
+                    $ref: "govhub-api-commons.yaml#/components/schemas/Link"
+              example:
+                 self: 
+                    href: "https://govhub.it/govregistry/services/1"                
+                 logo: 
+                    href: "https://govhub.it/govregistry/services/1/logo"
+                 logo_miniature: 
+                    href: "https://govhub.it/govregistry/services/logo_miniature"
+               
+      ServiceName:
+         type: string
+         pattern: .*
+         maxLength: 256
+         example: SUAP-Integrazione
+         
+      PhoneNumber:
+        maxLength: 255
+        type: string
+        example: "0124581247"
+        pattern: ^(\+|00)?[0-9 \-\(\)\.]{7,32}$
+
+      Email:
+       maxLength: 2048
+       type: string
+       format: email
+       example: "m.rossi@acme.com"
+
+      Logo:
+        type: string
+        format: base64
+        maxLength: 200000
+
+      SmallLogo:
+        type: string
+        format: base64
+        maxLength: 50000
+            
+      TaxCode:
+        type: string
+        minLength: 11
+        maxLength: 11
+        pattern: ^[0-9]+$
+        example: "01234567890"
+        
+      LegalName:
+         type: string
+         maxLength: 80
+         pattern: ^([\x20-\xFF]{1,80})$
+         example: Giletti S.R.L.
+         
+      RoleName:
+        type: string
+        pattern: .+
+        maxLength: 256
+        example: govhub_sender
+        
+      ApplicationName:
+        type: string
+        pattern: ^[a-zA-Z0-9_\-]+$
+        maxLength: 256
+        example: govregistry         
+               
+      Role:
+         type: object
+         additionalProperties: false
+         required:
+            - id
+            - role_name
+            - application
+         properties:
+            id: 
+               $ref: "#/components/schemas/RoleId"
+            role_name:
+               $ref: "#/components/schemas/RoleName"
+            application:
+               $ref: "#/components/schemas/ApplicationName"
+            assignable_roles:
+               type: array
+               minItems: 0
+               maxItems: 256
+               items:
+                  $ref: "#/components/schemas/AssignableRole"
+                  
+      AssignableRole:
+         type: object
+         additionalProperties: false
+         required:
+            - id
+            - role_name
+         properties:
+            id:
+               $ref: "#/components/schemas/RoleId"
+            role_name:
+               $ref: "#/components/schemas/RoleName"
+                  
+      RoleList:
+         allOf:
+            - $ref: "#/components/schemas/List"
+            - type: object
+              properties:              
+                 items:
+                    type: array
+                    items:
+                       $ref: "#/components/schemas/Role"
+                    minItems: 0
+                    maxItems: 2147483647
+              required:
+                 - items 
+              additionalProperties: false
+                  
+      AuthorizationList:
+         allOf:
+            - $ref: "#/components/schemas/List"
+            - type: object
+              properties:              
+                 items:
+                    type: array
+                    items:
+                       $ref: "#/components/schemas/Authorization"
+                    minItems: 0
+                    maxItems: 2147483647
+              required:
+                 - items 
+              additionalProperties: false                     
+      
+      RoleId:
+         type: integer
+         format: int64
+         minimum: 0
+         maximum: 9223372036854775807
+         example: 1
+         description: Role identifier.
+         
+      GenericSearchString:
+         type: string
+         maxLength: 255
+         example: "user_1"
+         pattern: ^[^\u0000]*$      
+         
+      Problem:
+         type: object
+         additionalProperties: false
+         properties:
+           detail:
+             type: string
+             description: A human readable description of the occurred problem.
+             example: Connection to database timed out
+             maxLength: 255
+             pattern: ^[ -~]+$
+           instance:
+             type: string
+             description: Link to a specific occurence of the problem.
+             format: uri
+             maxLength: 255
+           status:
+             maximum: 600
+             exclusiveMaximum: true
+             minimum: 100
+             type: integer
+             description: HTTP Status Code.
+             format: int32
+             example: 503
+           title:
+             type: string
+             description: Short description of the occurred problem.
+             maxLength: 255
+             pattern: ^[ -~]+$
+             example: Service Unavailable        
+           type:
+             type: string
+             description: Absolute URI for the problem description.
+             maxLength: 255
+             format: uri
+             example: "https://tools.ietf.org/html/rfc7231#section-6.6.4"
+             default: about:blank
+             
+      Direction:
+         type: string
+         enum:
+            - asc
+            - desc
+         default: desc
+         
+      AuthorizationOrdering:
+         type: string
+         enum:
+            - unsorted
+            - id
+            - role_name            
+         default: id
+         
+      UserOrdering:
+         type: string
+         enum:
+            - unsorted
+            - full_name
+            - id
+         default: id                  
+         
+      PatchOperations:
+         type: "array"
+         minItems: 1
+         maxItems: 20
+         items:
+            $ref: "#/components/schemas/PatchOp"
+         
+      PatchOp:
+         type: object
+         required:
+           - op
+           - path
+         additionalProperties: false
+         properties:
+           op:
+             type: string
+             enum:
+               - add
+               - remove
+               - replace
+             description: Specified operation.
+             example: add
+           path:
+             type: string
+             description: jsonPath of the mutating object.
+             example: "/organizations"
+             pattern: ^.*$
+             maxLength: 4096
+           value:
+             type: object
+             description: updating value.
+             
+      List:
+         required:
+         - page
+         type: object
+         additionalProperties: false
+         properties:
+          page:
+             $ref: "#/components/schemas/PageInfo" 
+          # I links li aggiunge spring hateoas
+          #_links:
+          #   $ref: "#/components/schemas/PaginationLinks"
+                    
+      PageInfo:
+         type: object
+         additionalProperties: false
+         required:
+            - offset
+            - limit
+         properties:
+           offset:
+             type: integer
+             description: Offset value (zero-based) for the results.
+             format: int64
+             minimum: 0
+             maximum: 9223372036854775807
+             example: 20
+           limit:
+             type: integer
+             description: numero massimo di elementi restituiti.
+             format: int32
+             minimum: 0
+             maximum: 2147483647
+             example: 25
+           total:
+               minimum: 0
+               maximum: 9223372036854775807
+               type: integer
+               description: Number of found elements.
+               format: int64
+               example: 32         
+               

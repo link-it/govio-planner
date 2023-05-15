@@ -18,6 +18,7 @@
  *******************************************************************************/
 package it.govhub.govio.planner.batch.entity;
 
+import java.nio.file.Path;
 import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
@@ -49,7 +50,7 @@ import lombok.ToString;
 @Table(name = "govio_planner_ntfy_files")
 public class GovioFileProducedEntity {
 
-        public enum Status {CREATED, PROCESSING, PROCESSED}
+        public enum Status {SCHEDULED, SENT}
         
         @Id 
         @SequenceGenerator(name="seq_govio_planner_ntfy_files",sequenceName="seq_govio_planner_ntfy_files", initialValue=1, allocationSize=1)
@@ -64,7 +65,7 @@ public class GovioFileProducedEntity {
         private Status status;
         
         @Column(name = "location", nullable = false)
-        private String location;
+        private Path location;
 
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "id_govio_planner_file", nullable = false, foreignKey = @ForeignKey(name = "GovioFileProducedEntity_GovioPlannerFile"))
