@@ -48,10 +48,10 @@ import org.springframework.test.context.ActiveProfiles;
 
 import it.govhub.govio.planner.batch.*;
 import it.govhub.govio.planner.batch.bean.*;
-import it.govhub.govio.planner.batch.config.GovioPlannerConfig;
 import it.govhub.govio.planner.batch.entity.ExpirationCIEFileEntity;
 import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity;
 import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity.Status;
+import it.govhub.govio.planner.batch.jobs.GovioPlannerJob;
 import it.govhub.govio.planner.batch.repository.ExpirationCIEFileRepository;
 import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 import it.govhub.govio.planner.batch.service.*;
@@ -71,7 +71,7 @@ import it.govhub.govio.planner.batch.service.*;
 	private JobLauncherTestUtils jobLauncherTestUtils;
 
 	@Autowired
-	@Qualifier(value = GovioPlannerConfig.PLANNERJOB)
+	@Qualifier(value = GovioPlannerJob.PLANNERJOB)
 	private Job job;
 
 	@Autowired

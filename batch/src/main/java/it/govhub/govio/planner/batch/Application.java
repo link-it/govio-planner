@@ -35,7 +35,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import it.govhub.govio.planner.batch.config.GovioPlannerConfig;
+import it.govhub.govio.planner.batch.jobs.GovioPlannerJob;
 import it.govhub.govio.planner.batch.service.GovioPlannerBatchService;
 
 
@@ -61,7 +61,7 @@ public class Application extends SpringBootServletInitializer {
 
 	@Scheduled(cron = "0 0 */1 * * *", zone = "Europe/Berlin")
 	public void fileProcessingJob() throws JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException, JobParametersInvalidException, NoSuchJobExecutionException, NoSuchJobException   {
-		this.log.info("Running scheduled {}", GovioPlannerConfig.PLANNERJOB);
+		this.log.info("Running scheduled {}", GovioPlannerJob.PLANNERJOB);
 		this.govioBatches.runPlannerJob();
 	}
 
