@@ -21,29 +21,23 @@ package it.govhub.govio.planner.batch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParametersInvalidException;
-import org.springframework.batch.core.launch.NoSuchJobException;
-import org.springframework.batch.core.launch.NoSuchJobExecutionException;
-import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
-import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import it.govhub.govio.planner.batch.jobs.GovioPlannerJob;
 import it.govhub.govio.planner.batch.service.GovioPlannerBatchService;
+import lombok.Value;
 
 
 @SpringBootApplication(scanBasePackages={"it.govhub.govio.planner", "it.govhub.govio.v1"})
 @EnableScheduling
-public class Application extends SpringBootServletInitializer {
+public class Application  {
 	
-		
 	private Logger log = LoggerFactory.getLogger(Application.class);
 	
 	public static final String GOVIOJOBID_STRING = "GovioJobID";
@@ -61,13 +55,13 @@ public class Application extends SpringBootServletInitializer {
 	}
 
 	@Scheduled(cron = "${planner.ntfy.schedule.time}", zone = "${planner.ntfy.schedule.zone}")
-	public void fileProcessingJob() throws JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException, JobParametersInvalidException, NoSuchJobExecutionException, NoSuchJobException   {
+	public void fileProcessingJob() throws Exception  {
 		this.log.info("Running scheduled {}", GovioPlannerJob.PLANNERJOB);
 		try {
 			this.govioBatches.runPlannerJob();
 		}
 		catch(JobInstanceAlreadyCompleteException e) {
-			log.debug("Il batch ha già girato con successo oggi");
+			log.info("Il batch ha già girato con successo oggi");
 		}
 	}
 }
