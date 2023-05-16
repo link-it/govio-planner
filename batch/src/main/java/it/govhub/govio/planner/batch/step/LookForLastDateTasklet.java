@@ -18,6 +18,7 @@
  *******************************************************************************/
 package it.govhub.govio.planner.batch.step;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
@@ -31,7 +32,6 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-
 import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 /*
  * 
@@ -40,11 +40,14 @@ import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
  * 
  */
 public class LookForLastDateTasklet implements Tasklet {
+
 	@Value("${planner.ntfy.min-last-date}")
-	private String lastDate;
-	@Value("${planner.ntfy.date-time}")
-	private String dateTimeDelay;
-	@Value("${planner.ntfy.schedule.zone}")
+	private LocalDate minLastDate;
+	
+	@Value("${planner.ntfy.expedition-delay-hours:0}")
+	private Long expeditionDelayHours;
+	
+	@Value("${planner.ntfy.schedule.zone:Europe/Rome}")
 	private String zone;
 
 	@Autowired
@@ -54,17 +57,28 @@ public class LookForLastDateTasklet implements Tasklet {
 
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
+		asdasd
+		//Instant.ofEpochMilli(0)
+		//ffsetDateTime.ofInstant(minLastDate., null)
+		
+//		OffsetDateTime.of
+		
+		OffsetDateTime epoch =  null; //OffsetDateTime.of(minLastDate, null, ZoneId.of(zone));
 		OffsetDateTime date = govioFileProducedRepository.lastDateNotifyFile();
+		if (date == null) {
+			date = epoch;
+		}
+		logger.info("Data in cui è girato il batch l'ultima volta: {}",date);
+				
 		ExecutionContext jobExecutionContext = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
-		String timezone = zone.substring(3);
-		OffsetDateTime epoch = OffsetDateTime.parse(lastDate+"T00:00:00"+timezone);
-		jobExecutionContext.put("date",(date==null)? epoch.toEpochSecond() : date.toEpochSecond());
-		logger.info("Data in cui è girato il batch l'ultima volta: {}",(date==null)? lastDate: date.toString());
-		ZoneId idZone = ZoneId.of(timezone);
-		OffsetDateTime expeditionDate = OffsetDateTime.now(idZone);
-		if (!dateTimeDelay.isEmpty()) expeditionDate.plusHours(Long.valueOf(dateTimeDelay));
+		
+		jobExecutionContext.put("date", date.toEpochSecond());
+		ZoneId idZone = ZoneId.of(zone);
+		OffsetDateTime expeditionDate = OffsetDateTime.now(idZone);	
+		expeditionDate = expeditionDate.plusHours(expeditionDelayHours);
+		
 		jobExecutionContext.put("expeditionDate",expeditionDate.toEpochSecond());
 		logger.info("Expedition date: {}",expeditionDate);
-		return null;
+		return RepeatStatus.FINISHED;
 	}
 }

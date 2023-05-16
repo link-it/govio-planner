@@ -42,11 +42,16 @@ public class FileInsertTasklet implements Tasklet {
 		// path del file creato nel writer
 	    String filename = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
 	    Path location = Path.of(filename);
+	    
 	    ExpirationCIEFileEntity expirationFile = expirationCIEFileRepository.lastExpirationFile();
 		GovioFileProducedEntity govioFileProducedEntity = GovioFileProducedEntity.builder().creationDate(OffsetDateTime.now())
 				.expirationFile(expirationFile).location(location).status(Status.SCHEDULED).build();
 		govioFileProducedRepository.save(govioFileProducedEntity);
+		
+		expirationFile.setProcessingDate(OffsetDateTime.now());
+		expirationCIEFileRepository.save(expirationFile);
+		
 		logger.info("inserita new entry nella tabella govio_planner_ntfy_files");
-		return null;
+		return RepeatStatus.FINISHED;
 	}
 }

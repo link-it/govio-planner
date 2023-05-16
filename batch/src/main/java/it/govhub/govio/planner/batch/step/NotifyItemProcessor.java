@@ -44,7 +44,7 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 	@Value("${planner.ntfy.policy}")
 	private String policy;
 	
-	@Value("${planner.ntfy.schedule.zone}")
+	@Value("${planner.ntfy.schedule.zone:Europe/Rome}")
 	private String zone;
 
 
@@ -68,9 +68,8 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 		// controlla che i valori della riga del csv siano tutti sintatticamente validi in caso contrario salta la riga
 		if (item.validate(item) == false) return null;
 		
-		String timezone = zone.substring(3);
-		this.expeditionDateTime = OffsetDateTime.ofInstant(Instant.ofEpochSecond(expeditionDateTimestamp), ZoneOffset.of(timezone));
-		this.lastExecuted = OffsetDateTime.ofInstant(Instant.ofEpochSecond(dateLastExecutedTimestamp), ZoneOffset.of(timezone));
+		this.expeditionDateTime = OffsetDateTime.ofInstant(Instant.ofEpochSecond(expeditionDateTimestamp), ZoneOffset.of(zone));
+		this.lastExecuted = OffsetDateTime.ofInstant(Instant.ofEpochSecond(dateLastExecutedTimestamp), ZoneOffset.of(zone));
 
 		logger.info("Riga: {} validata con successo",item);
 

@@ -59,4 +59,7 @@ private String location;
 @Column(name = "creation_date", nullable = false)
 private OffsetDateTime creationDate;
 
+@Column(name = "processing_date")
+private OffsetDateTime processingDate;
+
 }

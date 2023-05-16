@@ -54,7 +54,7 @@ public class Application  {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@Scheduled(cron = "${planner.ntfy.schedule.time}", zone = "${planner.ntfy.schedule.zone}")
+	@Scheduled(cron = "${planner.ntfy.schedule.time}", zone = "${planner.ntfy.schedule.zone:Europe/Rome}")
 	public void fileProcessingJob() throws Exception  {
 		this.log.info("Running scheduled {}", GovioPlannerJob.PLANNERJOB);
 		try {
