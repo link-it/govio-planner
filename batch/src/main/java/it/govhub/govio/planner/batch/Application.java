@@ -26,12 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
-import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-
-import com.fasterxml.jackson.databind.MapperFeature;
 
 import it.govhub.govio.planner.batch.jobs.GovioExpeditionJob;
 import it.govhub.govio.planner.batch.jobs.GovioPlannerJob;
@@ -57,18 +53,7 @@ public class Application  {
 		SpringApplication.run(Application.class, args);
 	}
 	
-	@Bean
-	public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
-		log.info("Building the Jackson Object mapper customizer...");
-		
-		return builder ->  builder.
-				featuresToEnable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
-
-	}
-	
-
-	//@Scheduled(cron = "${planner.ntfy.schedule.time}", zone = "${planner.ntfy.schedule.zone:Europe/Rome}")
-	@Scheduled(fixedDelayString = "${scheduler.fileProcessingJob.fixedDelayString:10000000}", initialDelayString = "${scheduler.initialDelayString:1}")
+	@Scheduled(cron = "${planner.ntfy.schedule.time}", zone = "${planner.ntfy.schedule.zone:Europe/Rome}")
 	public void fileProcessingJob() throws Exception  {
 		this.log.info("Running scheduled {}", GovioPlannerJob.PLANNERJOB);
 		try {
@@ -80,7 +65,7 @@ public class Application  {
 	}
 	
 	
-	@Scheduled(fixedDelayString = "${scheduler.fileProcessingJob.fixedDelayString:10000}", initialDelayString = "${scheduler.initialDelayString:5000}")
+	@Scheduled(fixedDelayString = "${planner.fileExpeditionJob.fixedDelay:30000}", initialDelayString = "${planner.fileExpeditionJob.initialDelay:1}")
 	public void expeditionJob() throws Exception  {
 		this.log.info("Running scheduled {}", GovioExpeditionJob.GOVIO_PLANNER_EXPEDITION_JOB);
 		this.govioBatches.runExpeditionJob();

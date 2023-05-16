@@ -124,6 +124,11 @@
 			<artifactId>jsr305</artifactId>
 			<version>${jsr305.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -187,6 +192,9 @@
 						<configuration>
 							<inputSpec>${project.basedir}/src/main/resources/govio-api-backoffice.yaml</inputSpec>
 							<generatorName>java</generatorName>
+							<schemaMappings>
+								<schemaMapping>FileStatus=it.govhub.govio.planner.batch.bean.FileStatus</schemaMapping>
+							</schemaMappings>
 							<configOptions>
 								<booleanGetterPrefix>is</booleanGetterPrefix>
 								<dateLibrary>java8</dateLibrary>
@@ -197,7 +205,6 @@
 								<invokerPackage>it.govhub.govio.v1.api.impl</invokerPackage>
 								<modelPackage>it.govhub.govio.v1.api.beans</modelPackage>
 								<useAnnotatedBasePath>true</useAnnotatedBasePath>
-								<useBeanValidation>false</useBeanValidation>								
 							</configOptions>
 							<output>${project.basedir}/target</output>
 							<generateApiTests>false</generateApiTests>
