@@ -27,7 +27,7 @@ import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity.Status;
 
 public class FileInsertTasklet implements Tasklet {
 	@Value("${planner.ntfy.csv-dir}")
-	private String notifyFile;
+	private Path notifyFile;
 
 	@Autowired
 	ExpirationCIEFileRepository expirationCIEFileRepository;
@@ -39,13 +39,20 @@ public class FileInsertTasklet implements Tasklet {
 
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
-		// path del file creato nel writer
-	    String filename = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
-	    Path location = Path.of(filename);
+		// path del file creato nel writ
+		String fileName = "CIE_EXPIRATION_"+LocalDate.now()+".csv";
+		Path location = notifyFile.resolve(fileName);
 	    
 	    ExpirationCIEFileEntity expirationFile = expirationCIEFileRepository.lastExpirationFile();
-		GovioFileProducedEntity govioFileProducedEntity = GovioFileProducedEntity.builder().creationDate(OffsetDateTime.now())
-				.expirationFile(expirationFile).location(location).status(Status.SCHEDULED).build();
+		GovioFileProducedEntity govioFileProducedEntity = GovioFileProducedEntity.builder().
+				creationDate(OffsetDateTime.now()).
+				expirationFile(expirationFile).
+				location(location).
+				messageCount(0L).				// TODO: Popolare
+				name(fileName).
+				size(location.toFile().length()).
+				status(Status.SCHEDULED).build();
+		
 		govioFileProducedRepository.save(govioFileProducedEntity);
 		
 		expirationFile.setProcessingDate(OffsetDateTime.now());

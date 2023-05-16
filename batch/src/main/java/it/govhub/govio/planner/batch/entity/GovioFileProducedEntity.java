@@ -73,4 +73,14 @@ public class GovioFileProducedEntity {
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "id_govio_planner_file", nullable = false, foreignKey = @ForeignKey(name = "GovioFileProducedEntity_GovioPlannerFile"))
         private ExpirationCIEFileEntity expirationFile;
+        
+    	@Column(name = "message_count", nullable = false, columnDefinition = "BIGINT")
+    	private Long messageCount;
+    	
+    	@Column(name = "name", nullable = false, unique = true)
+    	private String name;
+    	
+    	@Column(name = "size", nullable = false)
+    	private Long size;
+    	
 }

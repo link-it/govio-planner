@@ -169,9 +169,10 @@ public class GovioPlannerJob {
 	@Bean
 	@StepScope
 	@Qualifier("notifyItemProcessor")
-	public ItemProcessor<CSVItem,CSVExpiration> notifyItemProcessor(@Value("#{jobExecutionContext[date]}") long date,
-																	@Value("#{jobExecutionContext[expeditionDate]}") long expeditionDate) {
-	 		return new NotifyItemProcessor(date,expeditionDate );
+	public ItemProcessor<CSVItem,CSVExpiration> notifyItemProcessor(
+			@Value("#{jobExecutionContext[date]}") long date,
+			@Value("#{jobExecutionContext[expeditionDate]}") long expeditionDate) {
+	 		return new NotifyItemProcessor(date,expeditionDate);
 	}
 
 	@Bean
