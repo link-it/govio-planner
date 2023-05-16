@@ -71,10 +71,6 @@ public class InterruptedJobTest {
 	private String notifyFile;
 	@Value("${planner.exp.csv-dir}")
 	private String expFile;
-	@Value("${planner.ntfy.date-time}")
-	private String dateTimeDelay;
-	@Value("${planner.ntfy.schedule.zone}")
-	private String zone;
 
 	@Autowired
 	private GovioPlannerBatchService govioBatchService;
@@ -102,11 +98,9 @@ public class InterruptedJobTest {
 	@Test
 	void testSecondRunDoesNothingOK() throws Exception {
 		try {
-			String timezone = zone.substring(3);
-			ZoneOffset timezoneOffset = ZoneOffset.of(timezone);
 			Mockito
 			.when(clock.now())
-			.thenReturn(OffsetDateTime.of(2023, 05, 29, 0, 0, 0, 0, timezoneOffset));
+			.thenReturn(OffsetDateTime.of(2023, 05, 29, 0, 0, 0, 0, ZoneOffset.UTC));
 		// file delle scadenze caricato in /test/resources
 		String routePath = expFile;
 		Path location = Path.of("/etc/govio-planner/ntfy-files/CSVTestNotifiche.csv");
@@ -133,11 +127,9 @@ public class InterruptedJobTest {
 	// test che verifica il corretto funzionamento del batch ad una seconda iterazione dopo essere fallito la prima volta per errore, e dopo che tale errore sia risolto
 	@Test
 	void testNewCSVFirstKOThenOK() throws Exception {
-		String timezone = zone.substring(3);
-		ZoneOffset timezoneOffset = ZoneOffset.of(timezone);
 		Mockito
 		.when(clock.now())
-		.thenReturn(OffsetDateTime.of(2023, 05, 30, 0, 0, 0, 0, timezoneOffset));
+		.thenReturn(OffsetDateTime.of(2023, 05, 30, 0, 0, 0, 0, ZoneOffset.UTC));
 		
 		JobExecution brokenExecution = govioBatchService.runPlannerJob();
 		if (brokenExecution != null) {

@@ -69,11 +69,6 @@ import it.govhub.govio.planner.batch.service.*;
 	private String notifyFile;
 	@Value("${planner.exp.csv-dir}")
 	private String expFile;
-	@Value("${planner.ntfy.date-time}")
-	private String dateTimeDelay;
-	@Value("${planner.ntfy.schedule.zone}")
-	private String zone;
-
 
 	private JobLauncherTestUtils jobLauncherTestUtils;
 
@@ -112,11 +107,9 @@ import it.govhub.govio.planner.batch.service.*;
 		govioFileProducedRepository.deleteAll();
 		expirationCIEFileRepository.deleteAll();
 		// mock del metodo OffsetDateTime.now() in modo da far restituire il giorno 05/05/2023 alle ore 12:00
-		String timezone = zone.substring(3);
-		ZoneOffset timezoneOffset = ZoneOffset.of(timezone);
 		Mockito
 		.when(clock.now())
-		.thenReturn(OffsetDateTime.of(LOCAL_DATE,LocalTime.NOON, timezoneOffset));
+		.thenReturn(OffsetDateTime.of(LOCAL_DATE,LocalTime.NOON, ZoneOffset.UTC));
 		}
 
 	private void initializeJobLauncherTestUtils() throws Exception {
