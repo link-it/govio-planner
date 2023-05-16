@@ -197,7 +197,7 @@
 								<invokerPackage>it.govhub.govio.v1.api.impl</invokerPackage>
 								<modelPackage>it.govhub.govio.v1.api.beans</modelPackage>
 								<useAnnotatedBasePath>true</useAnnotatedBasePath>
-								<useBeanValidation>false</useBeanValidation>
+								<useBeanValidation>false</useBeanValidation>								
 							</configOptions>
 							<output>${project.basedir}/target</output>
 							<generateApiTests>false</generateApiTests>

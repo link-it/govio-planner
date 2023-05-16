@@ -21,6 +21,7 @@ package it.govhub.govio.planner.batch.jobs;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.time.LocalDate;
 
 import javax.persistence.EntityManager;
@@ -64,7 +65,7 @@ import it.govhub.govio.planner.batch.step.NotifyItemProcessor;
 @EnableBatchProcessing
 public class GovioPlannerJob {
 	@Value("${planner.ntfy.csv-dir}")
-	private String notifyFile;
+	private Path notifyFile;
 
 	@Autowired
 	protected JobBuilderFactory jobs;
@@ -130,20 +131,22 @@ public class GovioPlannerJob {
 	  @Bean
 	  @StepScope
 	  @Qualifier("notifyItemWriter")
-	  public FlatFileItemWriter<CSVExpiration> notifyItemWriter() throws IOException
+	  public FlatFileItemWriter<CSVExpiration> notifyItemWriter(
+			  @Value("#{jobExecutionContext[destFilename]}") String destFilename)
+	  throws IOException
 	  {
 	    //Create writer instance
 	    FlatFileItemWriter<CSVExpiration> filewriter = new MyFlatFileWriter();
 	    
-	    String filename = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
-	    File file = new File(filename);
+	    Path filePath = notifyFile.resolve(destFilename);
+	    File file = filePath.toFile();
 	    if (!file.exists()) file.createNewFile();
 	    if (!file.canWrite()) {
             throw new ItemStreamException("File is not writable: [" + file.getAbsolutePath() + "]");
 	    }
 
 	    //Set output file location
-	    filewriter.setResource(new FileSystemResource(filename));
+	    filewriter.setResource(new FileSystemResource(filePath));
 	    
 	    //All job repetitions should "append" to same output file TODO TESTA
 	    filewriter.setAppendAllowed(true);
