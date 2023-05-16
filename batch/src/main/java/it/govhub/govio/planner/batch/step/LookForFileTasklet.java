@@ -20,6 +20,8 @@ package it.govhub.govio.planner.batch.step;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +63,9 @@ public class LookForFileTasklet implements Tasklet {
 		}
 		ExecutionContext jobExecutionContext = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
 		jobExecutionContext.put("location", expFile.getLocation());
+		jobExecutionContext.put("destFilename", "CIE_EXPIRATION_"+LocalDate.now()+"-"+UUID.randomUUID()+".csv");
+
 		logger.info("Trovato il path del file delle scadenze {}",expFile.getLocation());
-		return null;
+		return RepeatStatus.FINISHED;
 	}
 }

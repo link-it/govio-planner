@@ -26,8 +26,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 
 @Configuration
@@ -44,13 +47,15 @@ public class RestTemplateConfig {
 		uriBuilderFactory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY);
 		restTemplate.setUriTemplateHandler(uriBuilderFactory);
 
-		
-		// Configuro il serializzatore per non serializzare gli attributi null
-		// Il backend IO non accetta i null values
-		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.setSerializationInclusion(Include.NON_NULL);
 		// La data nel backend io deve essere ISO-8601 in UTC
-		objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+		ObjectMapper objectMapper = JsonMapper.builder()
+		.serializationInclusion(Include.NON_NULL)
+		.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, false)
+		.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+		.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+		.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+		.build();
+		
 		MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
 		messageConverter.setObjectMapper(objectMapper);
 		

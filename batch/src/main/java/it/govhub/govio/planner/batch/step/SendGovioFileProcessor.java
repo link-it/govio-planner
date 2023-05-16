@@ -71,7 +71,7 @@ public class SendGovioFileProcessor implements ItemProcessor<GovioFileProducedEn
 	private void handleUploadException(HttpClientErrorException e, GovioFileProducedEntity item) {
 		switch (e.getStatusCode()) {
 		
-		case UNPROCESSABLE_ENTITY:
+		case CONFLICT:
 			logger.warn("CSV di Messaggi [{}] già inviato in un'altra run del job...", item.getId());
 			break;
 		case UNAUTHORIZED:
@@ -81,6 +81,7 @@ public class SendGovioFileProcessor implements ItemProcessor<GovioFileProducedEn
 			logErrorResponse(e);
 			throw e;
 		case BAD_REQUEST:
+		case UNPROCESSABLE_ENTITY:
 			// Queso  errori dovrebbero essere "colpa" nostra, riptere è inutile, skippo l'elemento e loggo un errore
 			logErrorResponse(e);
 			logger.error("Ricevuta BadRequest per CSV di Messaggi [{}]t, skippo il file.", item.getId());

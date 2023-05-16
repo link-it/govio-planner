@@ -81,6 +81,7 @@ public class GovioExpeditionJob {
 	    		.writer(writer)
 	    		.faultTolerant()
 	    		.skip(ShouldSkipException.class)
+	    		.skipLimit(10)
 				.retry(ShouldRetryException.class)
 				.retryLimit(5)
 				.build();
