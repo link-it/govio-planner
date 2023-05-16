@@ -19,8 +19,10 @@
 package it.govhub.govio.planner.batch.step;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 /*
@@ -42,13 +45,14 @@ import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 public class LookForLastDateTasklet implements Tasklet {
 
 	@Value("${planner.ntfy.min-last-date}")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
 	private LocalDate minLastDate;
 	
 	@Value("${planner.ntfy.expedition-delay-hours:0}")
 	private Long expeditionDelayHours;
 	
 	@Value("${planner.ntfy.schedule.zone:Europe/Rome}")
-	private String zone;
+	private ZoneId zone;
 
 	@Autowired
 	GovioFileProducedRepository govioFileProducedRepository;
@@ -57,28 +61,21 @@ public class LookForLastDateTasklet implements Tasklet {
 
 	@Override
 	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
-		asdasd
-		//Instant.ofEpochMilli(0)
-		//ffsetDateTime.ofInstant(minLastDate., null)
 		
-//		OffsetDateTime.of
-		
-		OffsetDateTime epoch =  null; //OffsetDateTime.of(minLastDate, null, ZoneId.of(zone));
 		OffsetDateTime date = govioFileProducedRepository.lastDateNotifyFile();
 		if (date == null) {
-			date = epoch;
+			// L'epoch viene intesa come UTC		
+			date = OffsetDateTime.of(minLastDate, LocalTime.MIDNIGHT, ZoneOffset.UTC);
 		}
-		logger.info("Data in cui è girato il batch l'ultima volta: {}",date);
-				
+		OffsetDateTime expeditionDate = OffsetDateTime.now(zone).plusHours(expeditionDelayHours);		
 		ExecutionContext jobExecutionContext = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
 		
-		jobExecutionContext.put("date", date.toEpochSecond());
-		ZoneId idZone = ZoneId.of(zone);
-		OffsetDateTime expeditionDate = OffsetDateTime.now(idZone);	
-		expeditionDate = expeditionDate.plusHours(expeditionDelayHours);
-		
-		jobExecutionContext.put("expeditionDate",expeditionDate.toEpochSecond());
+		logger.info("Data in cui è girato il batch l'ultima volta: {}",date);
 		logger.info("Expedition date: {}",expeditionDate);
+		
+		jobExecutionContext.put("date", date.toEpochSecond());
+		jobExecutionContext.put("expeditionDate",expeditionDate.toEpochSecond());
+		
 		return RepeatStatus.FINISHED;
 	}
 }

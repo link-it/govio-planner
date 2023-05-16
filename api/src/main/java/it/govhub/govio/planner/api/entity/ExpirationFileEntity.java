@@ -60,6 +60,7 @@ import lombok.ToString;
 @Table(name = "govio_planner_exp_files")
 public class ExpirationFileEntity {
 	
+    public enum Status {CREATED, PROCESSING, PROCESSED}
 	
 	@Id 
 	@SequenceGenerator(name="seq_govio_planner_exp_files",sequenceName="seq_govio_planner_exp_files", initialValue=1, allocationSize=1)
@@ -83,6 +84,10 @@ public class ExpirationFileEntity {
 	@Column(name = "processing_date")
 	private OffsetDateTime processingDate;
 	
+   @Column(name = "status", nullable = false)
+   @Enumerated(EnumType.STRING)
+   private Status status;
+       
 	@Column(name = "plan_id", nullable = false, length = 512)
 	private String planId;
 	
