@@ -23,13 +23,13 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 
 import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity;
-import it.govhub.govio.planner.batch.exception.BackendGovioRuntimeException;
+import it.govhub.govio.planner.batch.exception.ShouldRetryException;
 import it.govhub.govio.planner.batch.exception.ShouldSkipException;
 import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 import it.govhub.govio.planner.batch.step.SendGovioFileProcessor;
 
 @Configuration
-//@EnableBatchProcessing
+@EnableBatchProcessing
 public class GovioExpeditionJob {
 	
 	public static final String GOVIO_PLANNER_EXPEDITION_JOB = "GovioPlannerExpeditionJob";
@@ -81,7 +81,7 @@ public class GovioExpeditionJob {
 	    		.writer(writer)
 	    		.faultTolerant()
 	    		.skip(ShouldSkipException.class)
-				.retry(BackendGovioRuntimeException.class)
+				.retry(ShouldRetryException.class)
 				.retryLimit(5)
 				.build();
 	    

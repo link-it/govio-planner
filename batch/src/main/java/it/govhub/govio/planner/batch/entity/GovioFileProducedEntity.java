@@ -36,7 +36,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-import it.govhub.govregistry.commons.utils.JpaPathConverter;
+import it.govhub.govio.planner.batch.JpaPathConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

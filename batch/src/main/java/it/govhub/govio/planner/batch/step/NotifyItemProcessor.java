@@ -40,8 +40,10 @@ import it.govhub.govio.planner.batch.bean.MyClock;
  * I formati delle date sono configurabili nelle application properties 
  */
 public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration> {
+	
 	@Value("${planner.ntfy.policy}")
 	private String policy;
+	
 	@Value("${planner.ntfy.schedule.zone}")
 	private String zone;
 
@@ -89,7 +91,7 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 	
 	private CSVExpiration compareDates(LocalDate lastExecuted,LocalDate expeditionDate, LocalDate dueDate, int days, CSVItem item) {
 		if (
-				(lastExecuted.plusDays(days).compareTo(dueDate) <= 0)
+				(lastExecuted.plusDays(days).compareTo(dueDate) < 0)
 				&&
 				(myClock.now().toLocalDate().plusDays(days).compareTo(dueDate) >= 0)
 				)

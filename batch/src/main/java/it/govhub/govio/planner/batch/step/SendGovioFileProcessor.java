@@ -17,7 +17,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 
 import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity;
 import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity.Status;
-import it.govhub.govio.planner.batch.exception.BackendGovioRuntimeException;
+import it.govhub.govio.planner.batch.exception.ShouldRetryException;
 import it.govhub.govio.planner.batch.exception.ShouldSkipException;
 import it.govhub.govio.v1.api.FileApi;
 
@@ -56,11 +56,11 @@ public class SendGovioFileProcessor implements ItemProcessor<GovioFileProducedEn
 
 	@Override
 	public GovioFileProducedEntity process(GovioFileProducedEntity item) throws Exception {
-		logger.info("Spedizione messaggio [{}] a GovIo", item.getId());
+		logger.info("Spedizione CSV di Messaggi [{}] a GovIo", item.getId());
 		try {
 			govioFileClient.uploadFile(serviceInstanceId, item.getLocation().toFile());					
 		} catch (HttpClientErrorException e) {
-			handleUploadException(e);
+			handleUploadException(e, item);
 		}
 		
 		item.setStatus(Status.SENT);
@@ -68,56 +68,59 @@ public class SendGovioFileProcessor implements ItemProcessor<GovioFileProducedEn
 	}
 	
 	
-	private void handleUploadException(HttpClientErrorException e) {
+	private void handleUploadException(HttpClientErrorException e, GovioFileProducedEntity item) {
 		switch (e.getStatusCode()) {
 		
 		case UNPROCESSABLE_ENTITY:
-			logger.warn("Messaggio [{}] già inviato in un'altra run del job...");
+			logger.warn("CSV di Messaggi [{}] già inviato in un'altra run del job...", item.getId());
 			break;
 		case UNAUTHORIZED:
 		case FORBIDDEN:
 		case NOT_FOUND:
 			// Questi sono inaspettati, fermo il job.
 			logErrorResponse(e);
-			throw(e);
+			throw e;
 		case BAD_REQUEST:
-			// Questi errori dovrebbero essere "colpa" nostra, riptere è inutile, skippo l'elemento e loggo un errore
+			// Queso  errori dovrebbero essere "colpa" nostra, riptere è inutile, skippo l'elemento e loggo un errore
 			logErrorResponse(e);
+			logger.error("Ricevuta BadRequest per CSV di Messaggi [{}]t, skippo il file.", item.getId());
 			throw new ShouldSkipException(e);
 		case TOO_MANY_REQUESTS:
-			HttpHeaders responseHeaders = e.getResponseHeaders();
-			String value    =  responseHeaders.getFirst("Retry-After");
-			int sleepTime =  value == null ? defaultRetryTimer  : Integer.parseInt(value);
-			sleepTime       = Math.min(sleepTime, maxRetryTimer);
+			int sleepTime = getRetryAfter(e.getResponseHeaders());
 			sleep(sleepTime);
-			logger.error("Ricevuta eccezione 429, aspettato {} prima di riprovare",sleepTime );
-			throw new BackendGovioRuntimeException(e);
+			logger.debug("Ricevuta TooManyRequest 429 per CSV di Messaggi [{}], aspettato {} prima di riprovare",item.getId(), sleepTime );
+			throw new ShouldRetryException(e);
 		case INTERNAL_SERVER_ERROR:
 		case BAD_GATEWAY:
 		case SERVICE_UNAVAILABLE:
 			// SuI 5xx ripeto l'item
-			throw new BackendGovioRuntimeException(e);
+			logger.warn("Ricevuto errore {} per CSV di Messaggi [{}], riprovo.", e.getStatusCode(), item.getId());
+			throw new ShouldRetryException(e);
 		default:
 			logErrorResponse(e);
 			throw e;
 		}
 	}
 	
+	private int getRetryAfter(HttpHeaders headers) {
+		String value    =  headers.getFirst("Retry-After");
+		int sleepTime =  value == null ? defaultRetryTimer  : Integer.parseInt(value);
+		sleepTime       = Math.min(sleepTime, maxRetryTimer);
+		return sleepTime;
+	}
+	
 	private void sleep(int sleepTime) {
-		try {
-			Thread.sleep(sleepTime);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
+		try { Thread.sleep(sleepTime); }
+		catch ( InterruptedException e) {	throw new RuntimeException(e); 	}
 	}
 	
 	
 	protected void logErrorResponse(HttpStatusCodeException e) {
 		if(e instanceof HttpServerErrorException) {
-			logger.error("Ricevuto server error da BackendIO: {}", e.getMessage());
+			logger.error("Ricevuto server error da GovIO: {}", e.getMessage());
 		}
 		else {
-			logger.debug("Ricevuto client error da BackendIO: {}", e.getMessage());
+			logger.error("Ricevuto client error da GovIO: {}", e.getMessage());
 		}
 		logger.debug("HTTP Status Code: {}", e.getRawStatusCode());
 		logger.debug("Status Text: {}", e.getStatusText());

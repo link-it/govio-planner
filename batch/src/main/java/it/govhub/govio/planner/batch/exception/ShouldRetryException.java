@@ -1,10 +1,10 @@
 package it.govhub.govio.planner.batch.exception;
 
-public class BackendGovioRuntimeException extends RuntimeException {
+public class ShouldRetryException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 	
-	public BackendGovioRuntimeException(Throwable e) {
+	public ShouldRetryException(Throwable e) {
 		super(e);
 	}
 
