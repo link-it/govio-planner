@@ -20,9 +20,12 @@ package it.govhub.govio.planner.batch.step;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,16 +45,13 @@ import it.govhub.govio.planner.batch.bean.MyClock;
 public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration> {
 	
 	@Value("${planner.ntfy.policy}")
-	private String policy;
+	private List<Integer> policy;
 	
 	@Value("${planner.ntfy.schedule.zone:Europe/Rome}")
-	private String zone;
-
+	private ZoneId zone;
 
 	private Logger logger = LoggerFactory.getLogger(NotifyItemProcessor.class);
 
-	private OffsetDateTime lastExecuted;
-	private OffsetDateTime expeditionDateTime;
 	private long dateLastExecutedTimestamp;
 	private long expeditionDateTimestamp;
 	
@@ -67,35 +67,26 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 	public CSVExpiration process(CSVItem item) {
 		// controlla che i valori della riga del csv siano tutti sintatticamente validi in caso contrario salta la riga
 		if (item.validate(item) == false) return null;
-		
-		this.expeditionDateTime = OffsetDateTime.ofInstant(Instant.ofEpochSecond(expeditionDateTimestamp), ZoneOffset.of(zone));
-		this.lastExecuted = OffsetDateTime.ofInstant(Instant.ofEpochSecond(dateLastExecutedTimestamp), ZoneOffset.of(zone));
-
-		logger.info("Riga: {} validata con successo",item);
+		logger.debug("Riga: {} validata con successo",item);
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		LocalDate dueDate = LocalDate.parse(item.getDueDate(),formatter);
-
-		String[] splits = policy.split(",");
-		for (int i = splits.length-1; i>=0; i--) {
-			CSVExpiration res = compareDates(lastExecuted.toLocalDate(), expeditionDateTime.toLocalDate(), dueDate, Integer.valueOf(splits[i]),item);
-			if (res != null) {
+		long dueDateTimestamp= dueDate.toEpochSecond(LocalTime.MIDNIGHT, ZoneOffset.UTC);
+		
+		for (int days : policy) {
+			if (compareDates(dateLastExecutedTimestamp, expeditionDateTimestamp, dueDateTimestamp, days, item)) {
 				logger.info("Riga: {} aggiunta alle righe da inserire nel CSV",item);
-				return res;
+				ZonedDateTime expeditionDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(expeditionDateTimestamp), zone);
+				return new CSVExpiration(item.getTaxCode(),expeditionDateTime.toString(),item.getDueDate(),item.getFullName(),item.getIdentityCardNumber(),item.getReleaseDate(),Integer.toString(days));
 			}
-		  }
-		logger.info("Riga: {} saltata perchè la scadenza non rientra nelle finestre di preavviso",item);
+		}
+		logger.debug("Riga: {} saltata perchè la scadenza non rientra nelle finestre di preavviso",item);
 		return null;
 	}
 	
-	private CSVExpiration compareDates(LocalDate lastExecuted,LocalDate expeditionDate, LocalDate dueDate, int days, CSVItem item) {
-		if (
-				(lastExecuted.plusDays(days).compareTo(dueDate) < 0)
-				&&
-				(myClock.now().toLocalDate().plusDays(days).compareTo(dueDate) >= 0)
-				)
-			return new CSVExpiration(item.getTaxCode(),expeditionDateTime.toString(),item.getDueDate(),item.getFullName(),item.getIdentityCardNumber(),item.getReleaseDate(),Integer.toString(days));
-		return null;
+	private boolean compareDates(long lastExecuted, long expeditionDate, long  dueDate, int days, CSVItem item) {
+		long nowTimestamp = myClock.now().toEpochSecond();
+		return	lastExecuted + days*24*60*60 < dueDate	&&	nowTimestamp + days*24*60*60 >= dueDate;
 	}
 }
 

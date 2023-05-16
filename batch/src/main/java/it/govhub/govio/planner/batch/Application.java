@@ -31,7 +31,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import it.govhub.govio.planner.batch.jobs.GovioPlannerJob;
 import it.govhub.govio.planner.batch.service.GovioPlannerBatchService;
-import lombok.Value;
 
 
 @SpringBootApplication(scanBasePackages={"it.govhub.govio.planner", "it.govhub.govio.v1"})
@@ -54,7 +53,8 @@ public class Application  {
 		SpringApplication.run(Application.class, args);
 	}
 
-	@Scheduled(cron = "${planner.ntfy.schedule.time}", zone = "${planner.ntfy.schedule.zone:Europe/Rome}")
+	//@Scheduled(cron = "${planner.ntfy.schedule.time}", zone = "${planner.ntfy.schedule.zone:Europe/Rome}")
+	@Scheduled(fixedDelayString = "${scheduler.fileProcessingJob.fixedDelayString:10000}", initialDelayString = "${scheduler.initialDelayString:1}")
 	public void fileProcessingJob() throws Exception  {
 		this.log.info("Running scheduled {}", GovioPlannerJob.PLANNERJOB);
 		try {
