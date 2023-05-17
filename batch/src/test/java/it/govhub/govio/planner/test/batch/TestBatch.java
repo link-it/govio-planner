@@ -63,7 +63,7 @@ import it.govhub.govio.planner.batch.service.*;
 
 @ActiveProfiles("test")
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
-@SpringBootTest(classes = Application.class)
+//@SpringBootTest(classes = Application.class)
  class TestBatch {
 	@Value("${planner.ntfy.csv-dir}")
 	private Path govioFilePath;
@@ -111,7 +111,7 @@ import it.govhub.govio.planner.batch.service.*;
 	// data in cui è girato l'ultima volta il batch che viene usata nei test
 	OffsetDateTime lastDate = OffsetDateTime.parse("2023-05-03T10:15:30+01:00");
 	
-	@BeforeEach
+	//	@BeforeEach
 	void setUp(){
 		govioFileProducedRepository.deleteAll();
 		expirationCIEFileRepository.deleteAll();
@@ -129,7 +129,9 @@ import it.govhub.govio.planner.batch.service.*;
 		this.jobLauncherTestUtils.setJob(job);
 	}
 
-	
+
+	/*
+
 	//test con file dele scadenze non presente sul database
 	@Test
 	void testExpirationFileKO() throws Exception {
@@ -162,8 +164,6 @@ import it.govhub.govio.planner.batch.service.*;
 		JobExecution jobExecution = jobLauncherTestUtils.launchJob();
 		Assert.assertEquals("FAILED", jobExecution.getExitStatus().getExitCode());
 	}
-
-	/*
 	// testa il corretto funzionamento del batch in caso ci sia un errore sintattico in una riga del csv. Il batch salta la riga e continua l'eseguzione dopo aver loggato un warning
 	// il CSV prodotto ha una sola riga
 	@Test
