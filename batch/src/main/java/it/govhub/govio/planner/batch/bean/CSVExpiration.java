@@ -37,8 +37,8 @@ public class CSVExpiration {
 	String taxCode;
 	String expeditionDate;
 	String dueDate;
+    String releaseDate;
     String fullName;
     String identityCardNumber;
-    String releaseDate;
-    String forewarning;
+    String forewarning;	
 }

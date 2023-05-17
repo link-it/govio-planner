@@ -1,2 +1,2 @@
-tax_code;expedition_date;due_date;full_name;identity_card_number;release_date;forewarning
-BTTNLN30T19A662C;$expedition_date;03/05/2023;CognomeYYY NomeXXX;AO9997054;07/06/2011;-1
+tax_code,expedition_date,due_date,full_name,identity_card_number,release_date,forewarning
+BTTNLN30T19A662C,$expedition_date,2023-05-03T02:00:00,CognomeYYY NomeXXX,AO9997054,07/06/2011,-1

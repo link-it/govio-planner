@@ -19,11 +19,15 @@
 package it.govhub.govio.planner.batch.entity;
 
 
+import java.nio.file.Path;
 import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
+import it.govhub.govio.planner.batch.JpaPathConverter;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -53,8 +57,9 @@ private Long id;
 @Column(name = "name", nullable = false)
 private String name;
 
-@Column(name = "location",  length = 2048, nullable = false)
-private String location;
+@Convert(converter = JpaPathConverter.class)
+@Column(name = "location", nullable = false)
+private Path location;
 
 @Column(name = "creation_date", nullable = false)
 private OffsetDateTime creationDate;

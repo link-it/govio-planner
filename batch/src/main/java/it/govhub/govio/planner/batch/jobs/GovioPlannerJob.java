@@ -22,12 +22,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.time.LocalDate;
 
 import javax.persistence.EntityManager;
 
+import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -88,7 +91,7 @@ public class GovioPlannerJob {
 	@Bean
 	@StepScope
 	@Qualifier("notifyItemReader")
-	public FlatFileItemReader<CSVItem> notifyItemReader(@Value("#{jobExecutionContext[location]}") String filename) {
+	public FlatFileItemReader<CSVItem> notifyItemReader(@Value("#{jobExecutionContext[location]}") Path filename) {
 		FlatFileItemReader<CSVItem> itemReader = new FlatFileItemReader<>();
 		  //Set input file location
 		itemReader.setResource(new FileSystemResource(filename));
@@ -128,6 +131,7 @@ public class GovioPlannerJob {
 	 * Scrittura del file csv contenente le nuove notifiche
 	 * 	
 	 */
+	// listener con getWriteCount
 	  @Bean
 	  @StepScope
 	  @Qualifier("notifyItemWriter")
@@ -154,8 +158,7 @@ public class GovioPlannerJob {
 	    //Name field values sequence based on object properties 
 	    filewriter.setLineAggregator(new DelimitedLineAggregator<CSVExpiration>() {
 	      {
-	    	  // TODO: mettere ,
-	        setDelimiter(";");
+	        setDelimiter(",");
 	        setFieldExtractor(new BeanWrapperFieldExtractor<CSVExpiration>() {
 	          {
 	            setNames(new String[] {
@@ -167,6 +170,25 @@ public class GovioPlannerJob {
 	    });
 	    return filewriter;
 	  }
+	  
+	  
+	  // Listener per recuperare il numero di righe scritte nel file csv nello step notifyStep
+	  public class StepNotifyListener implements StepExecutionListener {
+			
+
+		  @Override
+			public ExitStatus afterStep(StepExecution stepExecution) {
+					stepExecution.getExecutionContext().put("NumRows", stepExecution.getWriteCount());
+				return stepExecution.getExitStatus();
+			}
+
+		@Override
+		public void beforeStep(StepExecution stepExecution) {
+			
+		}
+
+		}
+
 
 	
 	@Bean
@@ -223,6 +245,7 @@ public class GovioPlannerJob {
 	    		.reader(notifyItemReader)
 	    		.processor(notifyItemProcessor)
 	    		.writer(notifyItemWriter)
+	 		   .listener(new StepNotifyListener())
 	      .build();
 	}
 	
