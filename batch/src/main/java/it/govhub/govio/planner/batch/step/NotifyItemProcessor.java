@@ -70,14 +70,18 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 		logger.debug("Riga: {} validata con successo",item);
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+		DateTimeFormatter formatterDateTime = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
+
+        
 		LocalDate dueDate = LocalDate.parse(item.getDueDate(),formatter);
 		long dueDateTimestamp= dueDate.toEpochSecond(LocalTime.MIDNIGHT, ZoneOffset.UTC);
-		
+		ZonedDateTime duedateDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(dueDateTimestamp), zone);
+
 		for (int days : policy) {
 			if (compareDates(dateLastExecutedTimestamp, expeditionDateTimestamp, dueDateTimestamp, days, item)) {
 				logger.info("Riga: {} aggiunta alle righe da inserire nel CSV",item);
 				ZonedDateTime expeditionDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(expeditionDateTimestamp), zone);
-				return new CSVExpiration(item.getTaxCode(),expeditionDateTime.toString(),item.getDueDate(),item.getFullName(),item.getIdentityCardNumber(),item.getReleaseDate(),Integer.toString(days));
+				return new CSVExpiration(item.getTaxCode(),expeditionDateTime.format(formatterDateTime),duedateDateTime.format(formatterDateTime),item.getReleaseDate(),item.getFullName(),item.getIdentityCardNumber(),Integer.toString(days));
 			}
 		}
 		logger.debug("Riga: {} saltata perchè la scadenza non rientra nelle finestre di preavviso",item);
@@ -86,6 +90,7 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 	
 	private boolean compareDates(long lastExecuted, long expeditionDate, long  dueDate, int days, CSVItem item) {
 		long nowTimestamp = myClock.now().toEpochSecond();
+		logger.info("lastExecuted: {} ,nowTimestamp: {} , dueDate: {}",ZonedDateTime.ofInstant(Instant.ofEpochSecond(lastExecuted),zone),ZonedDateTime.ofInstant(Instant.ofEpochSecond(nowTimestamp),zone),ZonedDateTime.ofInstant(Instant.ofEpochSecond(dueDate),zone));
 		return	lastExecuted + days*24*60*60 < dueDate	&&	nowTimestamp + days*24*60*60 >= dueDate;
 	}
 }

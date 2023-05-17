@@ -45,13 +45,16 @@ public class FileInsertTasklet implements Tasklet {
 		
 		// path del file creato nel writ
 		Path location = notifyFile.resolve(fileName);
-	    
+		Long numRows = 0L;
+		if (jobExecutionContext.containsKey("NumRows") == true) { 
+			jobExecutionContext.getLong("NumRows");
+		}
 	    ExpirationCIEFileEntity expirationFile = expirationCIEFileRepository.lastExpirationFile();
 		GovioFileProducedEntity govioFileProducedEntity = GovioFileProducedEntity.builder().
 				creationDate(OffsetDateTime.now()).
 				expirationFile(expirationFile).
 				location(location).
-				messageCount(0L).				// TODO: Popolare
+				messageCount(numRows).
 				name(fileName).
 				size(location.toFile().length()).
 				status(Status.SCHEDULED).build();

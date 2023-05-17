@@ -56,7 +56,7 @@ public class LookForFileTasklet implements Tasklet {
 			logger.error("Il file delle scadenze è assente nel database");
 			throw new IOException("Il tracciato delle notifiche è assente nel database");
 		}
-		File exp = new File(expFile.getLocation());
+		File exp = expFile.getLocation().toFile();
 		if (exp.getAbsolutePath().isEmpty() || !exp.canRead()) {
 			logger.error("Il file delle scadenze è assente o non è leggibile");
 			throw new IOException("Il file delle scadenze è assente o non è leggibile");
