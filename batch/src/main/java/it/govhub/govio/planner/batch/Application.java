@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -36,8 +37,8 @@ import it.govhub.govio.planner.batch.service.GovioPlannerBatchService;
 
 @SpringBootApplication(scanBasePackages={"it.govhub.govio.planner", "it.govhub.govio.v1"})
 @EnableScheduling
-public class Application  {
-	
+public class Application extends SpringBootServletInitializer {
+
 	private Logger log = LoggerFactory.getLogger(Application.class);
 	
 	public static final String GOVIOJOBID_STRING = "GovioJobID";
