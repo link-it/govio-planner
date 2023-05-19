@@ -25,7 +25,6 @@ import java.nio.file.Path;
 
 import javax.persistence.EntityManager;
 
-import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -91,10 +90,11 @@ public class GovioPlannerJob {
 	@Bean
 	@StepScope
 	@Qualifier("notifyItemReader")
-	public FlatFileItemReader<CSVItem> notifyItemReader(@Value("#{jobExecutionContext[location]}") Path filename) {
+	public FlatFileItemReader<CSVItem> notifyItemReader(@Value("#{jobExecutionContext[location]}") String filePath) {
+		Path location = Path.of(filePath);
 		FlatFileItemReader<CSVItem> itemReader = new FlatFileItemReader<>();
 		  //Set input file location
-		itemReader.setResource(new FileSystemResource(filename));
+		itemReader.setResource(new FileSystemResource(location));
 		  //Set number of lines to skips. Use it if file has header rows.
 		itemReader.setLinesToSkip(1);
 		  //Configure how each line will be parsed and mapped to different values
