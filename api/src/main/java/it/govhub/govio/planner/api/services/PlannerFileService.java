@@ -72,9 +72,9 @@ public class PlannerFileService {
     		throw new InternalException("Non è stato possibile creare la directory per conservare i files");
     	}
     	
-    	sourceFilename = UUID.randomUUID() + "-" + sourceFilename;
+    	String destFilename  = UUID.randomUUID() + "-" + sourceFilename;
     	Path destFile =  destPath
-    				.resolve(sourceFilename);
+    				.resolve(destFilename);
     	
     	log.info("Streaming uploaded csv [{}] to [{}]", sourceFilename, destFile);
     	
