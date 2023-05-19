@@ -47,7 +47,7 @@ public class FileInsertTasklet implements Tasklet {
 		Path location = notifyFile.resolve(fileName);
 		Long numRows = 0L;
 		if (jobExecutionContext.containsKey("NumRows") == true) { 
-			jobExecutionContext.getLong("NumRows");
+			numRows = jobExecutionContext.getLong("NumRows");
 		}
 	    ExpirationCIEFileEntity expirationFile = expirationCIEFileRepository.lastExpirationFile();
 		GovioFileProducedEntity govioFileProducedEntity = GovioFileProducedEntity.builder().
