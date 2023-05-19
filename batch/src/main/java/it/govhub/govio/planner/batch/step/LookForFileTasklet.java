@@ -62,7 +62,7 @@ public class LookForFileTasklet implements Tasklet {
 			throw new IOException("Il file delle scadenze è assente o non è leggibile");
 		}
 		ExecutionContext jobExecutionContext = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
-		jobExecutionContext.put("location", expFile.getLocation());
+		jobExecutionContext.put("location", expFile.getLocation().toString());
 		jobExecutionContext.put("destFilename", "CIE_EXPIRATION_"+LocalDate.now()+"-"+UUID.randomUUID()+".csv");
 
 		logger.info("Trovato il path del file delle scadenze {}",expFile.getLocation());
