@@ -18,6 +18,7 @@
  *******************************************************************************/
 package it.govhub.govio.planner.batch.step;
 
+import java.sql.Date;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -81,7 +82,7 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 			if (compareDates(dateLastExecutedTimestamp, expeditionDateTimestamp, dueDateTimestamp, days, item)) {
 				logger.info("Riga: {} aggiunta alle righe da inserire nel CSV",item);
 				ZonedDateTime expeditionDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(expeditionDateTimestamp), zone);
-				return new CSVExpiration(item.getTaxCode(),expeditionDateTime.format(formatterDateTime),duedateDateTime.format(formatterDateTime),releaseDate.format(formatterDateReleaseDate),item.getFullName(),item.getIdentityCardNumber(),Integer.toString(days));
+				return new CSVExpiration(item.getTaxCode(),expeditionDateTime.toLocalDateTime().toString(),duedateDateTime.toLocalDateTime().toString(),releaseDate.format(formatterDateReleaseDate),item.getFullName(),item.getIdentityCardNumber(),Integer.toString(days));
 			}
 		}
 		logger.debug("Riga: {} saltata perchè la scadenza non rientra nelle finestre di preavviso",item);
