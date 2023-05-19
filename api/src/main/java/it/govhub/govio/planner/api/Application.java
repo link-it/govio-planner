@@ -65,6 +65,11 @@ public class Application  extends SpringBootServletInitializer {
 	
 	@Value("${govhub.time-zone:Europe/Rome}")
 	String timeZone;
+	
+	@Value("${placeholder-prop:default")
+	String placeholderProp;
+	
+	Logger log = LoggerFactory.getLogger(Application.class);
 
 
 	/**
@@ -82,6 +87,9 @@ public class Application  extends SpringBootServletInitializer {
 	 */
 	@Bean
 	public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
+		
+		this.log.info("PROPRIETÀ PLACEHOLDER: {}", placeholderProp);
+		
 		return builder ->  builder.
 				timeZone(this.timeZone).
 				serializerByType(Base64String.class, new Base64StringSerializer()).
