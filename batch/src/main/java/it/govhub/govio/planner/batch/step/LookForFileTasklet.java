@@ -63,7 +63,7 @@ public class LookForFileTasklet implements Tasklet {
 		}
 		ExecutionContext jobExecutionContext = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
 		jobExecutionContext.put("location", expFile.getLocation().toString());
-		jobExecutionContext.put("destFilename", "CIE_EXPIRATION_"+LocalDate.now()+"-"+UUID.randomUUID()+".csv");
+		jobExecutionContext.put("destFilename", "CIE_EXPIRATION_"+LocalDate.now()+".csv");
 
 		logger.info("Trovato il path del file delle scadenze {}",expFile.getLocation());
 		return RepeatStatus.FINISHED;
