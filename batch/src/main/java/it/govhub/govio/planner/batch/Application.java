@@ -33,7 +33,6 @@ import it.govhub.govio.planner.batch.jobs.GovioExpeditionJob;
 import it.govhub.govio.planner.batch.jobs.GovioPlannerJob;
 import it.govhub.govio.planner.batch.service.GovioPlannerBatchService;
 
-
 @SpringBootApplication(scanBasePackages={"it.govhub.govio.planner", "it.govhub.govio.v1"})
 @EnableScheduling
 public class Application  {
