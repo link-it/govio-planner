@@ -71,17 +71,17 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		DateTimeFormatter formatterDateTime = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
-
+		DateTimeFormatter formatterDateReleaseDate= DateTimeFormatter.ofPattern("yyyy-MM-dd");
         
 		LocalDate dueDate = LocalDate.parse(item.getDueDate(),formatter);
 		long dueDateTimestamp= dueDate.toEpochSecond(LocalTime.MIDNIGHT, ZoneOffset.UTC);
 		ZonedDateTime duedateDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(dueDateTimestamp), zone);
-		LocalDate releaseDate = LocalDate.parse(item.getReleaseDate(),DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+		LocalDate releaseDate = LocalDate.parse(item.getReleaseDate(),formatter);
 		for (int days : policy) {
 			if (compareDates(dateLastExecutedTimestamp, expeditionDateTimestamp, dueDateTimestamp, days, item)) {
 				logger.info("Riga: {} aggiunta alle righe da inserire nel CSV",item);
 				ZonedDateTime expeditionDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(expeditionDateTimestamp), zone);
-				return new CSVExpiration(item.getTaxCode(),expeditionDateTime.format(formatterDateTime),duedateDateTime.format(formatterDateTime),releaseDate.toString(),item.getFullName(),item.getIdentityCardNumber(),Integer.toString(days));
+				return new CSVExpiration(item.getTaxCode(),expeditionDateTime.format(formatterDateTime),duedateDateTime.format(formatterDateTime),releaseDate.format(formatterDateReleaseDate),item.getFullName(),item.getIdentityCardNumber(),Integer.toString(days));
 			}
 		}
 		logger.debug("Riga: {} saltata perchè la scadenza non rientra nelle finestre di preavviso",item);
