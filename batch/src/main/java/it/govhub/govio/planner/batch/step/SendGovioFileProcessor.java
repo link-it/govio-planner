@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 
 import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity;
 import it.govhub.govio.planner.batch.entity.GovioFileProducedEntity.Status;
@@ -61,6 +62,9 @@ public class SendGovioFileProcessor implements ItemProcessor<GovioFileProducedEn
 			govioFileClient.uploadFile(serviceInstanceId, item.getLocation().toFile());					
 		} catch (HttpClientErrorException e) {
 			handleUploadException(e, item);
+		} catch (ResourceAccessException e) {
+			logger.error("GovIO non raggiungibile: {}", e.getMessage());
+			throw new ShouldRetryException(e);
 		}
 		
 		item.setStatus(Status.SENT);

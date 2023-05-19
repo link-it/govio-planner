@@ -138,7 +138,6 @@ public class GovioPlannerBatchService {
 			}
 		}	else {
 			params = new JobParametersBuilder()
-					.addString("WhenDateTime",  String.valueOf(System.currentTimeMillis()))
 					.addString("When", CURRENTDATE_STRING)
 					.addString(GOVIO_JOB_ID, GovioPlannerJob.PLANNERJOB).toJobParameters();
 			return jobLauncher.run(plannerJob, params);
