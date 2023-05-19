@@ -93,15 +93,6 @@ public class CSVItem {
     		logger.warn("data di scadenza della carta di identità: {}, sintatticamente errata",e.getParsedString());
     		return false;
     	}
-
-    	if (!Pattern.matches("^[a-zA-Z\\s]*$",item.getFullName())) {
-    		logger.warn("valore {} del csv sintatticamente errato per il campo nome completo",item.getFullName());
-    		return false;
-    	}
-    	if (!Pattern.matches("^[A-Z]{2}\\d{7}$",item.getIdentityCardNumber())) {
-    		logger.warn("valore {} del csv sintatticamente errato per il campo numero di carta d'identità",item.getIdentityCardNumber());
-    		return false;
-    	}
     	if (!Pattern.matches("^[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]$",item.getTaxCode())) {
     		logger.warn("valore {} del csv sintatticamente errato per il campo codice fiscale",item.getTaxCode());
     		return false;
