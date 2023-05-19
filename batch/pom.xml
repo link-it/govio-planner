@@ -42,10 +42,32 @@
 	<dependencies>
 		
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			
+			<groupId>it.govhub.govregistry</groupId>
+			<artifactId>commons</artifactId>
+			<version>${govregistry.version}</version>
+		</dependency>
+		
+		<!-- SpringDoc per generazione OpenAPI e SwaggerUI -->
+		<!-- Servono perchè stiamo importanto commons, altrimenti l'applicazione non parte.' -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>${springdoc.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-data-rest</artifactId>
+			<version>${springdoc.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-hateoas</artifactId>
+		</dependency>
+		<!-- SpringDoc fine -->
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
