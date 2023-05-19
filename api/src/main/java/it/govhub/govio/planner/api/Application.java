@@ -66,7 +66,7 @@ public class Application  extends SpringBootServletInitializer {
 	@Value("${govhub.time-zone:Europe/Rome}")
 	String timeZone;
 	
-	@Value("${placeholder-prop:default")
+	@Value("${placeholder-prop:default}")
 	String placeholderProp;
 	
 	Logger log = LoggerFactory.getLogger(Application.class);
