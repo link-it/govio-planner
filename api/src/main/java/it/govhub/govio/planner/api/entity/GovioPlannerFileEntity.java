@@ -57,7 +57,7 @@ import lombok.ToString;
 @Table(name = "govio_planner_ntfy_files")
 public class GovioPlannerFileEntity {
 
-    public enum Status {CREATED, PROCESSING, PROCESSED}
+    public enum Status {SCHEDULED, SENT}
 	
 	@Id 
 	@SequenceGenerator(name="seq_govio_planner_ntfy_files",sequenceName="seq_govio_planner_ntfy_files", initialValue=1, allocationSize=1)
