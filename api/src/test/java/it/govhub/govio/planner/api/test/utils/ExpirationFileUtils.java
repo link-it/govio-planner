@@ -83,7 +83,7 @@ public class ExpirationFileUtils {
 				.size(destFile.toFile().length())
 				.location(destFile)
 				.name(file.getName())
-				.status(it.govhub.govio.planner.api.entity.GovioPlannerFileEntity.Status.CREATED)
+				.status(it.govhub.govio.planner.api.entity.GovioPlannerFileEntity.Status.SCHEDULED)
 				.expirationFile(expirationFile)
 				.messageCount(100L)
 				.build();
