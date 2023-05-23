@@ -18,7 +18,6 @@
  *******************************************************************************/
 package it.govhub.govio.planner.batch.step;
 
-import java.sql.Date;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -71,7 +70,6 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 		logger.debug("Riga: {} validata con successo",item);
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-		DateTimeFormatter formatterDateTime = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss");
 		DateTimeFormatter formatterDateReleaseDate= DateTimeFormatter.ofPattern("yyyy-MM-dd");
         
 		LocalDate dueDate = LocalDate.parse(item.getDueDate(),formatter);

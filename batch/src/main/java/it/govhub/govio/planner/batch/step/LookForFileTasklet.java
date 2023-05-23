@@ -21,7 +21,6 @@ package it.govhub.govio.planner.batch.step;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import it.govhub.govio.planner.batch.entity.ExpirationCIEFileEntity;
 import it.govhub.govio.planner.batch.repository.ExpirationCIEFileRepository;
+import it.govhub.govio.planner.batch.exception.ExpeditionDateFileNotExists;
 
 /*
  * 
@@ -54,17 +54,16 @@ public class LookForFileTasklet implements Tasklet {
 		ExpirationCIEFileEntity expFile = expirationCIEFileRepository.lastExpirationFile();
 		if (expFile==null) {
 			logger.error("Il file delle scadenze è assente nel database");
-			throw new IOException("Il tracciato delle notifiche è assente nel database");
+			throw new ExpeditionDateFileNotExists("Il tracciato delle notifiche è assente nel database");
 		}
-		File exp = expFile.getLocation().toFile();
+		File exp = expFile.getLocation().resolve(expFile.getName()).toFile();
 		if (exp.getAbsolutePath().isEmpty() || !exp.canRead()) {
 			logger.error("Il file delle scadenze è assente o non è leggibile");
 			throw new IOException("Il file delle scadenze è assente o non è leggibile");
 		}
 		ExecutionContext jobExecutionContext = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
-		jobExecutionContext.put("location", expFile.getLocation().toString());
+		jobExecutionContext.put("location", exp.getAbsolutePath());
 		jobExecutionContext.put("destFilename", "CIE_EXPIRATION_"+LocalDate.now()+".csv");
-
 		logger.info("Trovato il path del file delle scadenze {}",expFile.getLocation());
 		return RepeatStatus.FINISHED;
 	}

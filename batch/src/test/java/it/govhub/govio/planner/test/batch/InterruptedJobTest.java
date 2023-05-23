@@ -22,7 +22,6 @@ import static org.junit.Assert.assertThrows;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import org.junit.Assert;
@@ -65,13 +64,13 @@ import it.govhub.govio.planner.test.config.JobOperatorConfig;
 @Import({JobOperatorConfig.class})
 @TestInstance(Lifecycle.PER_CLASS)
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
-//@SpringBootTest(classes = Application.class)
+@SpringBootTest(classes = Application.class)
 public class InterruptedJobTest {
 	@Value("${planner.ntfy.csv-dir}")
-	private String notifyFile;
+	private Path govioFilePath;
 	@Value("${planner.exp.csv-dir}")
-	private String expFile;
-
+	private Path expirationPath;
+	
 	@Autowired
 	private GovioPlannerBatchService govioBatchService;
 	
@@ -81,90 +80,104 @@ public class InterruptedJobTest {
 	@Autowired
 	private GovioFileProducedRepository govioFileProducedRepository;
 	
-	//Mock clock bean
     @MockBean
 	private MyClock clock;
 	
 	Logger log = LoggerFactory.getLogger(InterruptedJobTest.class);
 	
-//	@BeforeEach
+	@BeforeEach
 	void setUp(){
 		// mock del metodo LocalDate.now() in modo da far restituire sempre il giorno 05/05/2023
 		govioFileProducedRepository.deleteAll();
 		expirationCIEFileRepository.deleteAll();
 	}
+	
 
 	// test per verificare che il batch nel caso giri una seconda volta nello stesso giorno, dopo aver completato con successo, non facendo nulla
 	@Test
 	void testSecondRunDoesNothingOK() throws Exception {
-	/*
+		File createdFile = null;
+		File inputFile = null;
 		try {
 			Mockito
 			.when(clock.now())
 			.thenReturn(OffsetDateTime.of(2023, 05, 29, 0, 0, 0, 0, ZoneOffset.UTC));
-		// file delle scadenze caricato in /test/resources
-		String routePath = expFile;
-		Path location = Path.of("/var/govio-planner/ntfy-files/CSVTestNotifiche.csv");
-		File f = new File(routePath+"CIE_scadenza_tracciato.csv");
-		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(OffsetDateTime.now()).location(f.getAbsolutePath()).name("CSVTestNotifiche.csv").build();
-		GovioFileProducedEntity govioFileProducedEntity =  GovioFileProducedEntity.builder().creationDate(OffsetDateTime.parse("2007-12-03T10:15:30+01:00")).expirationFile(expirationCIEFileEntity).location(location).status(Status.SCHEDULED).messageCount(0L).size(0L).name("test").build();	
-		expirationCIEFileRepository.save(expirationCIEFileEntity);
-		govioFileProducedRepository.save(govioFileProducedEntity);
+			TestUtility utility = new TestUtility(clock);
+			inputFile = expirationPath.resolve("CIE_scadenza_tracciato.csv").toFile();
+			utility.createCSVOKInput(inputFile);
+			ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder()
+					.creationDate(clock.now())
+					.location(expirationPath)
+					.name("CIE_scadenza_tracciato.csv")
+					.build();
+			GovioFileProducedEntity govioFileProducedEntity =  GovioFileProducedEntity.builder()
+					.creationDate(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"))
+					.expirationFile(expirationCIEFileEntity)
+					.location(inputFile.toPath())
+					.status(Status.SCHEDULED)
+					.messageCount(0L)
+					.size(0L)
+					.name("test")
+					.build();	
+			expirationCIEFileRepository.save(expirationCIEFileEntity);
+			govioFileProducedRepository.save(govioFileProducedEntity);
 
-		JobExecution jobExecution = govioBatchService.runPlannerJob();
-		Assert.assertEquals("COMPLETED", jobExecution.getExitStatus().getExitCode());
+			JobExecution jobExecution = govioBatchService.runPlannerJob();
+			Assert.assertEquals("COMPLETED", jobExecution.getExitStatus().getExitCode());
+			createdFile = govioFilePath.resolve(jobExecution.getExecutionContext().get("destFilename").toString()).toFile();
 
-	    assertThrows(org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException.class, () -> {
-	    	govioBatchService.runPlannerJob();
-	    });
+			assertThrows(org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException.class, () -> {
+				govioBatchService.runPlannerJob();
+			});
 		} finally {
-		String fileCreatedPath = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
-		File createdFile = new File(fileCreatedPath);
-		if (createdFile!=null) createdFile.delete();
+			if (inputFile!=null) inputFile.delete();
+			if (createdFile!=null) createdFile.delete();
 		}
-	*/}
-	
+	}
 	// test che verifica il corretto funzionamento del batch ad una seconda iterazione dopo essere fallito la prima volta per errore, e dopo che tale errore sia risolto
 	@Test
 	void testNewCSVFirstKOThenOK() throws Exception {
-		/*
 		Mockito
 		.when(clock.now())
 		.thenReturn(OffsetDateTime.of(2023, 05, 30, 0, 0, 0, 0, ZoneOffset.UTC));
-		
+		TestUtility utility = new TestUtility(clock);
+
 		JobExecution brokenExecution = govioBatchService.runPlannerJob();
 		if (brokenExecution != null) {
 			this.log.info("Il Job [{}] è rimasto in stato {}", GovioPlannerJob.PLANNERJOB, brokenExecution.getStatus());
 			Assert.assertTrue(BatchStatus.FAILED == brokenExecution.getStatus());
 		}
-
+		File inputFile = null;
 		File createdFile=null;
 		try {
-		// file delle scadenze caricato in /test/resources
-		String routePath = expFile;
-		File f = new File(routePath+"CIE_scadenza_tracciato.csv");
-		Path location = Path.of("/var/govio-planner/ntfy-files/CSVTestNotifiche.csv");
-		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder().creationDate(OffsetDateTime.now()).location(location).name("CSVTestNotifiche.csv").build();
-		GovioFileProducedEntity govioFileProducedEntity =  GovioFileProducedEntity.builder().creationDate(OffsetDateTime.parse("2007-12-03T10:15:30+01:00")).expirationFile(expirationCIEFileEntity).location(location).status(Status.SCHEDULED).messageCount(0L).size(0L).name("test").build();	
-		expirationCIEFileRepository.save(expirationCIEFileEntity);
-		govioFileProducedRepository.save(govioFileProducedEntity);
-		
-		Assert.assertEquals("FAILED", brokenExecution.getExitStatus().getExitCode());
+			inputFile = expirationPath.resolve("CIE_scadenza_tracciato.csv").toFile();
+			
+			utility.createCSVOKInput(inputFile);
+			ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder()
+					.creationDate(clock.now())
+					.location(expirationPath)
+					.name("CIE_scadenza_tracciato.csv")
+					.build();
+			GovioFileProducedEntity govioFileProducedEntity =  GovioFileProducedEntity.builder()
+					.creationDate(OffsetDateTime.parse("2007-12-03T10:15:30+01:00"))
+					.expirationFile(expirationCIEFileEntity)
+					.location(inputFile.toPath())
+					.status(Status.SCHEDULED)
+					.messageCount(0L)
+					.size(0L)
+					.name("test")
+					.build();	
+			expirationCIEFileRepository.save(expirationCIEFileEntity);
+			govioFileProducedRepository.save(govioFileProducedEntity);
 		// Rilancio l'esecuzione
 		JobExecution jobExecution = govioBatchService.runPlannerJob();
 		Assert.assertEquals("COMPLETED", jobExecution.getStatus().toString());
 
-		// file delle notifiche creato in /test/resources 
-		String fileCreatedPath = notifyFile+"CIE_EXPIRATION_"+LocalDate.now()+".csv";
-		String expectedFilePath = notifyFile+"CIE_EXPIRATION.csv";
-		createdFile = new File(fileCreatedPath);
-		// file su che mi aspetto di produrre caricato in /test/resources
-		File expectedFile = new File(expectedFilePath);
-		Assert.assertNotNull(expectedFile);
+		createdFile = govioFilePath.resolve(jobExecution.getExecutionContext().get("destFilename").toString()).toFile();
+		Assert.assertNotNull(createdFile);
 		} finally {
+			if (inputFile!=null) inputFile.delete();
 			if (createdFile!=null) createdFile.delete();
 		}
-	}
-	*/
 	}
 }
