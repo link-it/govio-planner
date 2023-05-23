@@ -33,6 +33,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import it.govhub.govio.planner.batch.jobs.GovioExpeditionJob;
 import it.govhub.govio.planner.batch.jobs.GovioPlannerJob;
 import it.govhub.govio.planner.batch.service.GovioPlannerBatchService;
+import it.govhub.govio.planner.batch.exception.ExpeditionDateFileNotExists;
 
 @SpringBootApplication(scanBasePackages={"it.govhub.govio.planner", "it.govhub.govio.v1"})
 @EnableScheduling
@@ -61,6 +62,9 @@ public class Application extends SpringBootServletInitializer {
 		}
 		catch(JobInstanceAlreadyCompleteException e) {
 			log.info("Il batch ha già girato con successo oggi");
+		}
+		catch(ExpeditionDateFileNotExists e2) {
+			log.info(e2.getMessage());
 		}
 	}
 	

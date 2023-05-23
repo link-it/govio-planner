@@ -90,11 +90,10 @@ public class GovioPlannerJob {
 	@Bean
 	@StepScope
 	@Qualifier("notifyItemReader")
-	public FlatFileItemReader<CSVItem> notifyItemReader(@Value("#{jobExecutionContext[location]}") String filePath) {
-		Path location = Path.of(filePath);
+	public FlatFileItemReader<CSVItem> notifyItemReader(@Value("#{jobExecutionContext[location]}") Path filePath) {
 		FlatFileItemReader<CSVItem> itemReader = new FlatFileItemReader<>();
 		  //Set input file location
-		itemReader.setResource(new FileSystemResource(location));
+		itemReader.setResource(new FileSystemResource(filePath));
 		  //Set number of lines to skips. Use it if file has header rows.
 		itemReader.setLinesToSkip(1);
 		  //Configure how each line will be parsed and mapped to different values
@@ -120,7 +119,7 @@ public class GovioPlannerJob {
 
 				@Override
 	            public void writeHeader(Writer writer) throws IOException {
-					writer.write("tax_code;expedition_date;due_date;full_name;identity_card_number;release_date;forewarning");
+					writer.write("tax_code,expedition_date,due_date,full_name,identity_card_number,release_date,forewarning");
 	            }
 	        });
 	    }

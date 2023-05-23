@@ -126,8 +126,13 @@ public class GovioPlannerBatchService {
 			case FAILED:
 			case STOPPED:
 				log.info("Trovata istanza preesistente per il Job [{}]. Riavvio il Job. ", lastExecution); //FileProcessingJobConfig.FILEPROCESSING_JOB, exitStatus, lastExecution.getStatus());
-				Long newExecutionId = jobOperator.restart(lastExecution.getId());
-				return jobExplorer.getJobExecution(newExecutionId);
+			//	Long newExecutionId = jobOperator.restart(lastExecution.getId());
+			//	return jobExplorer.getJobExecution(newExecutionId);
+				params = new JobParametersBuilder()
+						.addString("When", CURRENTDATE_STRING)
+						.addString(GOVIO_JOB_ID, GovioPlannerJob.PLANNERJOB).toJobParameters();
+				return jobLauncher.run(plannerJob, params);
+
 			default:
 				// STARTED, STARTING, STOPPING, UNKNOWN:
 				// STARTED STARTING e STOPPING non dovremmo mai trovarli, per via del comportamento dello scheduler.
