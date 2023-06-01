@@ -18,6 +18,7 @@
  *******************************************************************************/
 package it.govhub.govio.planner.test.batch;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.BufferedReader;
@@ -316,19 +317,19 @@ import it.govhub.govio.planner.batch.service.*;
 					.location(inputFile.toPath())
 					.status(Status.SCHEDULED)
 					.messageCount(0L)
-					.name("test")	
+					.name("test")
 					.size(0L)
 					.build();
 			expirationCIEFileRepository.save(expirationCIEFileEntity);
 			govioFileProducedRepository.save(govioFileProducedEntity);
 		JobExecution jobExecution = jobLauncherTestUtils.launchJob();
 		Assert.assertEquals("COMPLETED", jobExecution.getExitStatus().getExitCode());
-		
+
 		// file delle notifiche creato in govioFilePath dal batch	
 		createdFile = govioFilePath.resolve(jobExecution.getExecutionContext().get("destFilename").toString()).toFile();
 		expectedFile = govioFilePath.resolve("testCSV.csv").toFile();
 		utility.createNewExpirationCSV_VuotoOKOutput(expectedFile);
-
+		
 		assertEquals(true,FileUtils.contentEquals(expectedFile,createdFile));
 		} finally {
 			if (inputFile!=null) inputFile.delete();
