@@ -216,6 +216,12 @@
 			<artifactId>govhub-openapi-codegen</artifactId>
 			<version>0.1.0-SNAPSHOT</version>
 		</dependency>
+		
+		<!--Endpoint di liveness-->
+		<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
 
 	</dependencies>
 
