@@ -46,7 +46,7 @@ public class FileInsertTasklet implements Tasklet {
 		// path del file creato nel writ
 		Path location = notifyFile.resolve(fileName);
 		Long numRows = 0L;
-		if (jobExecutionContext.containsKey("NumRows") == true) { 
+		if (jobExecutionContext.containsKey("NumRows") == true) {
 			numRows = jobExecutionContext.getLong("NumRows");
 		}
 	    ExpirationCIEFileEntity expirationFile = expirationCIEFileRepository.lastExpirationFile();

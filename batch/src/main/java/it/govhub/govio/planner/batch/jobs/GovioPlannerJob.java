@@ -53,7 +53,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
-
 import it.govhub.govio.planner.batch.bean.CSVExpiration;
 import it.govhub.govio.planner.batch.bean.CSVItem;
 import it.govhub.govio.planner.batch.repository.ExpirationCIEFileRepository;
@@ -111,6 +110,7 @@ public class GovioPlannerJob {
 		return itemReader;
 	}
 	
+	
 // per personalizzare il nome degli header del csv
 	public class MyFlatFileWriter extends FlatFileItemWriter<CSVExpiration> {
 
@@ -124,7 +124,6 @@ public class GovioPlannerJob {
 	        });
 	    }
 	}
-
 	/*
 	 * 
 	 * Scrittura del file csv contenente le nuove notifiche
@@ -136,7 +135,7 @@ public class GovioPlannerJob {
 	  @Qualifier("notifyItemWriter")
 	  public FlatFileItemWriter<CSVExpiration> notifyItemWriter(
 			  @Value("#{jobExecutionContext[destFilename]}") String destFilename)
-	  throws IOException
+	  throws Exception
 	  {
 	    //Create writer instance
 	    FlatFileItemWriter<CSVExpiration> filewriter = new MyFlatFileWriter();
@@ -151,8 +150,7 @@ public class GovioPlannerJob {
 	    //Set output file location
 	    filewriter.setResource(new FileSystemResource(filePath));
 	    
-	    //All job repetitions should "append" to same output file TODO TESTA
-	    filewriter.setAppendAllowed(true);
+	    filewriter.setAppendAllowed(false);
 
 	    //Name field values sequence based on object properties 
 	    filewriter.setLineAggregator(new DelimitedLineAggregator<CSVExpiration>() {
@@ -176,7 +174,11 @@ public class GovioPlannerJob {
 			
 
 		  @Override
-			public ExitStatus afterStep(StepExecution stepExecution) {
+			public ExitStatus afterStep(StepExecution stepExecution)  {
+				if(stepExecution.getReadCount()==0) {
+					throw new RuntimeException("Dati assenti nel csv delle notifiche");
+				}
+
 					stepExecution.getExecutionContext().put("NumRows", stepExecution.getWriteCount());
 				return stepExecution.getExitStatus();
 			}
