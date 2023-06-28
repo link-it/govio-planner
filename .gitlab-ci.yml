@@ -2,6 +2,8 @@ stages:
     - test
     - build
     - deploy
+    - upload
+    - release
 
 variables: 
     MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
@@ -10,6 +12,7 @@ variables:
     SONAR_USER: "gitlab-runner"
     SONAR_PASSWORD: "Password@123"
     DEPLOY_STAGING_SSH_HOST: "ec2-user@172.16.1.121"
+    PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/govio-planner/${CI_COMMIT_TAG}"
 default:
     cache:
         paths:
@@ -20,7 +23,12 @@ default:
 test:
     stage: test
     script:
-      - mvn verify sonar:sonar -U
+      - mvn clean verify sonar:sonar -U
+    rules:
+      - if: $CI_COMMIT_BRANCH == "staging"
+        allow_failure: true
+      - if: $CI_COMMIT_BRANCH != "staging"
+        allow_failure: false
     artifacts:
         untracked: false
         name: test_and_coverage_report
@@ -28,7 +36,7 @@ test:
           junit: [ api/target/surefire-reports/*.xml ]
         expire_in: "1 week"
 
-build_java:
+build_war:
     stage: build
     script:
       - mkdir ~/.ssh
@@ -37,11 +45,54 @@ build_java:
       - mvn -s /tmp/maven_settings/settings-repo_linkit.xml -U deploy -Pwar -DskipTests=true 
     artifacts:
         paths:
-          - api/target/govio-planner.war
           - batch/target/govio-planner-batch.war
-    only:
-      - main
-      - staging
+          - api/target/govio-planner.war
+    rules:
+      - if: '$CI_COMMIT_TAG || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "staging"'
+
+build_jar:
+    stage: build
+    script:
+      - mkdir ~/.ssh
+      - chmod 700 ~/.ssh
+      - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+      - mvn -s /tmp/maven_settings/settings-repo_linkit.xml -U deploy -DskipTests=true
+    artifacts:
+        paths:
+          - batch/target/govio-planner-batch.jar
+          - api/target/govio-planner.jar
+    rules:
+      - if: '$CI_COMMIT_TAG'        
+
+upload:
+    stage: upload
+    image: curlimages/curl:latest
+    rules:
+        - if: $CI_COMMIT_TAG
+    script:
+        - 'curl -k --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file api/target/govio-planner.war ${PACKAGE_REGISTRY_URL}/govio-planner-${CI_COMMIT_TAG}.war'
+        - 'curl -k --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file api/target/govio-planner.jar ${PACKAGE_REGISTRY_URL}/govio-planner-${CI_COMMIT_TAG}.jar'          
+        - 'curl -k --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file batch/target/govio-planner-batch.war ${PACKAGE_REGISTRY_URL}/govio-planner-batch-${CI_COMMIT_TAG}.war'
+        - 'curl -k --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file batch/target/govio-planner-batch.jar ${PACKAGE_REGISTRY_URL}/govio-planner-batch-${CI_COMMIT_TAG}.jar'          
+
+release:
+    stage: release
+    image: registry.gitlab.com/gitlab-org/release-cli:latest
+    rules:
+        - if: $CI_COMMIT_TAG
+    before_script:
+        - apk --no-cache add openssl ca-certificates
+        - mkdir -p /usr/local/share/ca-certificates/extra
+        - openssl s_client -connect ${CI_SERVER_HOST}:${CI_SERVER_PORT} -servername ${CI_SERVER_HOST} -showcerts </dev/null 2>/dev/null | sed -e '/-----BEGIN/,/-----END/!d' | tee "/usr/local/share/ca-certificates/${CI_SERVER_HOST}.crt" >/dev/null
+        - update-ca-certificates
+    script:
+        - 'release-cli create --name "govio-planner-$CI_COMMIT_TAG" --tag-name $CI_COMMIT_TAG 
+          --assets-link "[ 
+            {\"name\":\"govio-planner-${CI_COMMIT_TAG}.war\", \"url\":\"${PACKAGE_REGISTRY_URL}/govio-planner-${CI_COMMIT_TAG}.war\"},
+            {\"name\":\"govio-planner-${CI_COMMIT_TAG}.jar\", \"url\":\"${PACKAGE_REGISTRY_URL}/govio-planner-${CI_COMMIT_TAG}.jar\"},
+            {\"name\":\"govio-planner-batch-${CI_COMMIT_TAG}.war\", \"url\":\"${PACKAGE_REGISTRY_URL}/govio-planner-batch-${CI_COMMIT_TAG}.war\"},
+            {\"name\":\"govio-planner-batch-${CI_COMMIT_TAG}.jar\", \"url\":\"${PACKAGE_REGISTRY_URL}/govio-planner-batch-${CI_COMMIT_TAG}.jar\"}
+          ]"'
 
 deploy_staging:
   stage: deploy
@@ -51,8 +102,7 @@ deploy_staging:
     - scp -r batch/target/govio-planner-batch.war $DEPLOY_STAGING_SSH_HOST:/tmp/
     - scp -r api/target/govio-planner.war $DEPLOY_STAGING_SSH_HOST:/tmp/
     - ssh $DEPLOY_STAGING_SSH_HOST 'sudo systemctl stop tomcat'
-    - ssh $DEPLOY_STAGING_SSH_HOST 'sudo cp -r /tmp/govio-planner.war /tmp/govio-planner-batch.war /opt/apache-tomcat-9.0.70/webapps/'  
+    - ssh $DEPLOY_STAGING_SSH_HOST 'sudo cp -r /tmp/govio-planner-batch.war /tmp/govio-planner.war /opt/apache-tomcat-9.0.70/webapps/'  
     - ssh $DEPLOY_STAGING_SSH_HOST 'sudo systemctl start tomcat'
-    - ssh $DEPLOY_STAGING_SSH_HOST 'sudo rm -rf /tmp/govio-planner.war /tmp/govio-planner-batch.war'
   only:
     - staging
