@@ -25,7 +25,10 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,9 +69,13 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 	@Override
 	public CSVExpiration process(CSVItem item) {
 		// controlla che i valori della riga del csv siano tutti sintatticamente validi in caso contrario salta la riga
-		if (item.validate(item) == false) return null;
-		logger.debug("Riga: {} validata con successo",item);
-
+		logger.debug("Analisi scadenza CIE: {}", item.toString());
+		
+		if (validate(item) == false) {
+			logger.debug("Entry scartata per sintassi non valida");
+			return null;
+		}
+		
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		DateTimeFormatter formatterDateReleaseDate= DateTimeFormatter.ofPattern("yyyy-MM-dd");
         
@@ -76,21 +83,55 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 		long dueDateTimestamp= dueDate.toEpochSecond(LocalTime.MIDNIGHT, ZoneOffset.UTC);
 		ZonedDateTime duedateDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(dueDateTimestamp), zone);
 		LocalDate releaseDate = LocalDate.parse(item.getReleaseDate(),formatter);
+		Collections.sort(policy);
 		for (int days : policy) {
-			if (compareDates(dateLastExecutedTimestamp, expeditionDateTimestamp, dueDateTimestamp, days, item)) {
-				logger.info("Riga: {} aggiunta alle righe da inserire nel CSV",item);
+			if (compareDates(dateLastExecutedTimestamp, dueDateTimestamp, days)) {
 				ZonedDateTime expeditionDateTime = ZonedDateTime.ofInstant(Instant.ofEpochSecond(expeditionDateTimestamp), zone);
-				return new CSVExpiration(item.getTaxCode(),expeditionDateTime.toLocalDateTime().toString(),duedateDateTime.toLocalDateTime().toString(),releaseDate.format(formatterDateReleaseDate),item.getFullName(),item.getIdentityCardNumber(),Integer.toString(days));
+				CSVExpiration csvExpiration = new CSVExpiration(item.getTaxCode(),expeditionDateTime.toLocalDateTime().toString(),duedateDateTime.toLocalDateTime().toString(),releaseDate.format(formatterDateReleaseDate),item.getFullName(),item.getIdentityCardNumber(),Integer.toString(days));
+				logger.info("Scadenza del {} a {} giorni. Aggiunta notifica: {}", dueDate, days, csvExpiration);
+				return csvExpiration;
 			}
 		}
-		logger.debug("Riga: {} saltata perchè la scadenza non rientra nelle finestre di preavviso",item);
+		logger.debug("Nessuna notifica da inviare");
 		return null;
 	}
 	
-	private boolean compareDates(long lastExecuted, long expeditionDate, long  dueDate, int days, CSVItem item) {
+	/** 
+	 * Controllo se la dueDate ricade nella finestra di notifica, ovvero
+	 * 
+	 * @return
+	 */
+	private boolean compareDates(long lastExecuted, long dueDate, int days) {
 		long nowTimestamp = myClock.now().toEpochSecond();
-		logger.info("lastExecuted: {} ,nowTimestamp: {} , dueDate: {}",ZonedDateTime.ofInstant(Instant.ofEpochSecond(lastExecuted),zone),ZonedDateTime.ofInstant(Instant.ofEpochSecond(nowTimestamp),zone),ZonedDateTime.ofInstant(Instant.ofEpochSecond(dueDate),zone));
-		return	lastExecuted + days*24*60*60 < dueDate	&&	nowTimestamp + days*24*60*60 >= dueDate;
+		logger.trace("lastExecuted: {}, nowTimestamp: {}, dueDate: {}", ZonedDateTime.ofInstant(Instant.ofEpochSecond(lastExecuted),zone), ZonedDateTime.ofInstant(Instant.ofEpochSecond(nowTimestamp),zone),ZonedDateTime.ofInstant(Instant.ofEpochSecond(dueDate),zone));
+		return	lastExecuted + daysToSeconds(days) < dueDate && nowTimestamp + daysToSeconds(days) >= dueDate;
 	}
+	
+	private long daysToSeconds(int days) {
+		return days*24*60*60;
+	}
+	
+	private boolean validate(CSVItem item) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    	try {
+            LocalDate.parse(item.getReleaseDate(), formatter);
+    	} catch (DateTimeParseException e) {
+        	logger.warn("Errore di sintassi nella data di rilascio della carta di identità: {}", item.getReleaseDate());
+        	return false;
+        }
+    	
+    	try {
+            LocalDate.parse(item.getDueDate(), formatter);
+    	} catch (DateTimeParseException e) {
+    		logger.warn("Errore di sintassi nella data di scadenza della carta di identità: {}", item.getDueDate());
+    		return false;
+    	}
+    	
+    	if (!Pattern.matches("^[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]$",item.getTaxCode())) {
+    		logger.warn("Errore di sintassi nel codice fiscale del titolare della carta di identità: {}", item.getTaxCode());
+    		return false;
+    	}
+    	return true;
+    }
 }
 

@@ -18,12 +18,6 @@
  *******************************************************************************/
 package it.govhub.govio.planner.batch.bean;
 
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,28 +71,6 @@ public class CSVItem {
     	this.taxCode = taxCode.trim();
     }    
     
-    public boolean validate(CSVItem item) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    	try {
-            LocalDate.parse(item.getReleaseDate(), formatter);
-    	}
-        catch (DateTimeParseException e) {
-        	logger.warn("data di rilascio della carta di identità: {}, sintatticamente errata",e.getParsedString());
-        	return false;
-        }
-    	try {
-            LocalDate.parse(item.getDueDate(), formatter);
-    	}
-    	catch (DateTimeParseException e) {
-    		logger.warn("data di scadenza della carta di identità: {}, sintatticamente errata",e.getParsedString());
-    		return false;
-    	}
-    	if (!Pattern.matches("^[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]$",item.getTaxCode())) {
-    		logger.warn("valore {} del csv sintatticamente errato per il campo codice fiscale",item.getTaxCode());
-    		return false;
-    	}
-    	return true;
-    }
 }
 
 
