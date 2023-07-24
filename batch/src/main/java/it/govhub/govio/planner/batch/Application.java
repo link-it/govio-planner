@@ -56,22 +56,22 @@ public class Application extends SpringBootServletInitializer {
 	
 	@Scheduled(cron = "${planner.ntfy.schedule.time}", zone = "${planner.ntfy.schedule.zone:Europe/Rome}")
 	public void fileProcessingJob() throws Exception  {
-		this.log.info("Running scheduled {}", GovioPlannerJob.PLANNERJOB);
+		this.log.debug("Running scheduled {}", GovioPlannerJob.PLANNERJOB);
 		try {
 			this.govioBatches.runPlannerJob();
 		}
 		catch(JobInstanceAlreadyCompleteException e) {
-			log.info("Il batch ha già girato con successo oggi");
+			log.debug("Il batch ha già girato con successo oggi");
 		}
 		catch(ExpeditionDateFileNotExists e2) {
-			log.info(e2.getMessage());
+			log.debug(e2.getMessage());
 		}
 	}
 	
 	
 	@Scheduled(fixedDelayString = "${planner.fileExpeditionJob.fixedDelay:30000}", initialDelayString = "${planner.fileExpeditionJob.initialDelay:1}")
 	public void expeditionJob() throws Exception  {
-		this.log.info("Running scheduled {}", GovioExpeditionJob.GOVIO_PLANNER_EXPEDITION_JOB);
+		this.log.debug("Running scheduled {}", GovioExpeditionJob.GOVIO_PLANNER_EXPEDITION_JOB);
 		this.govioBatches.runExpeditionJob();
 	}
 }
