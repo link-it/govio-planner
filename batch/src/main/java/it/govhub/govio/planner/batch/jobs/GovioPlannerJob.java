@@ -25,11 +25,8 @@ import java.nio.file.Path;
 
 import javax.persistence.EntityManager;
 
-import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -70,7 +67,7 @@ public class GovioPlannerJob {
 
 	@Autowired
 	protected JobBuilderFactory jobs;
-	
+
 	@Autowired
 	protected StepBuilderFactory steps;
 
@@ -79,10 +76,10 @@ public class GovioPlannerJob {
 
 	@Autowired
 	GovioFileProducedRepository govioFileProducedRepository;
-	
+
 	@Autowired
 	ExpirationCIEFileRepository expirationCIEFileRepository;
-	
+
 	public static final String PLANNERJOB= "PlannerJob";
 
 
@@ -91,11 +88,11 @@ public class GovioPlannerJob {
 	@Qualifier("notifyItemReader")
 	public FlatFileItemReader<CSVItem> notifyItemReader(@Value("#{jobExecutionContext[location]}") Path filePath) {
 		FlatFileItemReader<CSVItem> itemReader = new FlatFileItemReader<>();
-		  //Set input file location
+		//Set input file location
 		itemReader.setResource(new FileSystemResource(filePath));
-		  //Set number of lines to skips. Use it if file has header rows.
+		//Set number of lines to skips. Use it if file has header rows.
 		itemReader.setLinesToSkip(1);
-		  //Configure how each line will be parsed and mapped to different values
+		//Configure how each line will be parsed and mapped to different values
 		itemReader.setStrict(false);
 		DelimitedLineTokenizer tokenizer = new DelimitedLineTokenizer();
 		tokenizer.setDelimiter(";");
@@ -109,20 +106,20 @@ public class GovioPlannerJob {
 		itemReader.setLineMapper(lineMapper);
 		return itemReader;
 	}
-	
-	
-// per personalizzare il nome degli header del csv
+
+
+	// per personalizzare il nome degli header del csv
 	public class MyFlatFileWriter extends FlatFileItemWriter<CSVExpiration> {
 
-	    public MyFlatFileWriter (){
-	        super.setHeaderCallback(new FlatFileHeaderCallback() {
+		public MyFlatFileWriter (){
+			super.setHeaderCallback(new FlatFileHeaderCallback() {
 
 				@Override
-	            public void writeHeader(Writer writer) throws IOException {
+				public void writeHeader(Writer writer) throws IOException {
 					writer.write("tax_code,expedition_date,due_date,full_name,identity_card_number,release_date,forewarning");
-	            }
-	        });
-	    }
+				}
+			});
+		}
 	}
 	/*
 	 * 
@@ -130,89 +127,63 @@ public class GovioPlannerJob {
 	 * 	
 	 */
 	// listener con getWriteCount
-	  @Bean
-	  @StepScope
-	  @Qualifier("notifyItemWriter")
-	  public FlatFileItemWriter<CSVExpiration> notifyItemWriter(
-			  @Value("#{jobExecutionContext[destFilename]}") String destFilename)
-	  throws Exception
-	  {
-	    //Create writer instance
-	    FlatFileItemWriter<CSVExpiration> filewriter = new MyFlatFileWriter();
-	    
-	    Path filePath = notifyFile.resolve(destFilename);
-	    File file = filePath.toFile();
-	    if (!file.exists()) file.createNewFile();
-	    if (!file.canWrite()) {
-            throw new ItemStreamException("File is not writable: [" + file.getAbsolutePath() + "]");
-	    }
+	@Bean
+	@StepScope
+	@Qualifier("notifyItemWriter")
+	public FlatFileItemWriter<CSVExpiration> notifyItemWriter(@Value("#{jobExecutionContext[destFilename]}") String destFilename)
+			throws Exception {
+		//Create writer instance
+		FlatFileItemWriter<CSVExpiration> filewriter = new MyFlatFileWriter();
 
-	    //Set output file location
-	    filewriter.setResource(new FileSystemResource(filePath));
-	    
-	    filewriter.setAppendAllowed(false);
+		Path filePath = notifyFile.resolve(destFilename);
+		File file = filePath.toFile();
+		if (!file.exists()) file.createNewFile();
+		if (!file.canWrite()) {
+			throw new ItemStreamException("File is not writable: [" + file.getAbsolutePath() + "]");
+		}
 
-	    //Name field values sequence based on object properties 
-	    filewriter.setLineAggregator(new DelimitedLineAggregator<CSVExpiration>() {
-	      {
-	        setDelimiter(",");
-	        setFieldExtractor(new BeanWrapperFieldExtractor<CSVExpiration>() {
-	          {
-	            setNames(new String[] {
-	            		"taxCode", "expeditionDate", "dueDate","fullName","identityCardNumber","releaseDate","forewarning"
-	            		});
-	          }
-	        });
-	      }
-	    });
-	    return filewriter;
-	  }
-	  
-	  
-	  // Listener per recuperare il numero di righe scritte nel file csv nello step notifyStep
-	  public class StepNotifyListener implements StepExecutionListener {
-			
+		//Set output file location
+		filewriter.setResource(new FileSystemResource(filePath));
 
-		  @Override
-			public ExitStatus afterStep(StepExecution stepExecution)  {
-				if(stepExecution.getReadCount()==0) {
-					throw new RuntimeException("Dati assenti nel csv delle notifiche");
-				}
-
-					stepExecution.getExecutionContext().put("NumRows", stepExecution.getWriteCount());
-				return stepExecution.getExitStatus();
+		filewriter.setAppendAllowed(false);
+		//Name field values sequence based on object properties 
+		filewriter.setLineAggregator(new DelimitedLineAggregator<CSVExpiration>() {
+			{
+				setDelimiter(",");
+				setFieldExtractor(new BeanWrapperFieldExtractor<CSVExpiration>() {
+					{
+						setNames(new String[] {
+								"taxCode", "expeditionDate", "dueDate","fullName","identityCardNumber","releaseDate","forewarning"
+						});
+					}
+				});
 			}
-
-		@Override
-		public void beforeStep(StepExecution stepExecution) {
-			
-		}
-
-		}
+		});
+		return filewriter;
+	}
 
 
-	
 	@Bean
 	@StepScope
 	@Qualifier("notifyItemProcessor")
 	public ItemProcessor<CSVItem,CSVExpiration> notifyItemProcessor(
 			@Value("#{jobExecutionContext[date]}") long date,
 			@Value("#{jobExecutionContext[expeditionDate]}") long expeditionDate) {
-	 		return new NotifyItemProcessor(date,expeditionDate);
+		return new NotifyItemProcessor(date,expeditionDate);
 	}
 
 	@Bean
 	@StepScope
 	@Qualifier("dateTasklet")
 	public Tasklet dateTasklet() {
-        return new LookForLastDateTasklet();
+		return new LookForLastDateTasklet();
 	}
-	
+
 	@Bean
 	@StepScope
 	@Qualifier("fileTasklet")
 	public Tasklet fileTasklet() {
-        return new LookForFileTasklet();
+		return new LookForFileTasklet();
 	}
 
 
@@ -220,36 +191,35 @@ public class GovioPlannerJob {
 	@StepScope
 	@Qualifier("insertTasklet")
 	public Tasklet fileInsert() {
-        return new FileInsertTasklet();
+		return new FileInsertTasklet();
 	}
-	
+
 	@Bean(name = "PlannerJob")
 	public Job plannerJob(
 			@Qualifier("notifyStep") Step notifyStep
 			)  {
-	    return jobs.get("plannerJob")
-	  	   .start(lookForLastDateTasklet())
-		   .next(lookForFileTasklet())
-	      .next(notifyStep)
-	      .next(fileInsertTasklet())
-	      .build();
+		return jobs.get("plannerJob")
+				.start(lookForLastDateTasklet())
+				.next(lookForFileTasklet())
+				.next(notifyStep)
+				.next(fileInsertTasklet())
+				.build();
 	}
-	
+
 	@Bean
 	@Qualifier("notifyStep")
 	public Step notifyStep(
 			ItemStreamReader<CSVItem> notifyItemReader,
 			ItemProcessor<CSVItem,CSVExpiration> notifyItemProcessor,
 			ItemStreamWriter<CSVExpiration> notifyItemWriter)  {
-	    return steps.get("notifyStep")
-	    		.<CSVItem, CSVExpiration>chunk(10)
-	    		.reader(notifyItemReader)
-	    		.processor(notifyItemProcessor)
-	    		.writer(notifyItemWriter)
-	 		   .listener(new StepNotifyListener())
-	      .build();
+		return steps.get("notifyStep")
+				.<CSVItem, CSVExpiration>chunk(10)
+				.reader(notifyItemReader)
+				.processor(notifyItemProcessor)
+				.writer(notifyItemWriter)
+				.build();
 	}
-	
+
 	@Bean
 	@Qualifier("fileInsertTasklet")
 	public Step fileInsertTasklet() {
@@ -265,7 +235,7 @@ public class GovioPlannerJob {
 				.tasklet(dateTasklet())
 				.build();
 	}
-	
+
 	@Bean
 	@Qualifier("lookForFileTasklet")
 	public Step lookForFileTasklet() {

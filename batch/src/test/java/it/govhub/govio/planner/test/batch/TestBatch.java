@@ -67,6 +67,7 @@ import it.govhub.govio.planner.batch.service.*;
  class TestBatch {
 	@Value("${planner.ntfy.csv-dir}")
 	private Path govioFilePath;
+	
 	@Value("${planner.exp.csv-dir}")
 	private Path expirationPath;
 	
@@ -140,11 +141,11 @@ import it.govhub.govio.planner.batch.service.*;
 	@Test
 	void testDirectoryReadKO() throws Exception {
 		initializeJobLauncherTestUtils();
-		Path fileAssenteDirectory = expirationPath.resolve("file_assente.csv");
+		Path fileAssentePath = expirationPath.resolve("file_assente.csv");
 		Path location = expirationPath.resolve("CSVTestNotifiche.csv");
 		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder()
 				.creationDate(clock.now())
-				.location(fileAssenteDirectory)
+				.location(fileAssentePath)
 				.name("file_assente.csv")
 				.build();
 		GovioFileProducedEntity govioFileProducedEntity = GovioFileProducedEntity.builder()
@@ -176,7 +177,7 @@ import it.govhub.govio.planner.batch.service.*;
 		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity
 				.builder()
 				.creationDate(clock.now())
-				.location(expirationPath)
+				.location(inputFile.toPath())
 				.name("CIE_scadenza_tracciato.csv")
 				.build();
 		GovioFileProducedEntity govioFileProducedEntity = GovioFileProducedEntity
@@ -243,7 +244,7 @@ import it.govhub.govio.planner.batch.service.*;
 		utility.createCSVOKInput(inputFile);
 		ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder()
 				.creationDate(clock.now())
-				.location(expirationPath)
+				.location(inputFilePath)
 				.name("CIE_scadenza_tracciato.csv")
 				.build();
 		GovioFileProducedEntity govioFileProducedEntity = GovioFileProducedEntity.builder()
@@ -303,12 +304,13 @@ import it.govhub.govio.planner.batch.service.*;
 		try {
 			initializeJobLauncherTestUtils();
 			// file di input del test
-			inputFile = expirationPath.resolve("CIE_scadenza_tracciato.csv").toFile();
+			Path inputFilePath = expirationPath.resolve("CIE_scadenza_tracciato.csv");
+			inputFile= inputFilePath.toFile();
 			TestUtility utility = new TestUtility(clock);
 			utility.createNewExpirationCSV_VuotoOKInput(inputFile);
 			ExpirationCIEFileEntity expirationCIEFileEntity = ExpirationCIEFileEntity.builder()
 					.creationDate(clock.now())
-					.location(expirationPath)
+					.location(inputFilePath)
 					.name("CIE_scadenza_tracciato.csv")
 					.build();
 			GovioFileProducedEntity govioFileProducedEntity = GovioFileProducedEntity.builder()
