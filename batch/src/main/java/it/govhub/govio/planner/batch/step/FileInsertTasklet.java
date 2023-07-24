@@ -1,5 +1,7 @@
 package it.govhub.govio.planner.batch.step;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 
@@ -38,7 +40,7 @@ public class FileInsertTasklet implements Tasklet {
 	private Logger logger = LoggerFactory.getLogger(FileInsertTasklet.class);
 
 	@Override
-	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
+	public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws IOException {
 		
 		ExecutionContext jobExecutionContext = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
 		String fileName = jobExecutionContext.getString("destFilename");
@@ -48,6 +50,8 @@ public class FileInsertTasklet implements Tasklet {
 		Long numRows = 0L;
 		if (jobExecutionContext.containsKey("NumRows") == true) {
 			numRows = jobExecutionContext.getLong("NumRows");
+		} else {
+			numRows = Files.lines(location).count()-1;
 		}
 	    ExpirationCIEFileEntity expirationFile = expirationCIEFileRepository.lastExpirationFile();
 		GovioFileProducedEntity govioFileProducedEntity = GovioFileProducedEntity.builder().

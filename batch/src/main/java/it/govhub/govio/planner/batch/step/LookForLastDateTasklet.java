@@ -18,11 +18,8 @@
  *******************************************************************************/
 package it.govhub.govio.planner.batch.step;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +30,8 @@ import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.format.annotation.DateTimeFormat;
 
+import it.govhub.govio.planner.batch.bean.MyClock;
 import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
 /*
  * 
@@ -43,10 +40,12 @@ import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
  * 
  */
 public class LookForLastDateTasklet implements Tasklet {
+	
+	@Autowired
+	MyClock myClock;
 
-	@Value("${planner.ntfy.min-last-date}")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-	private LocalDate minLastDate;
+	@Value("${planner.ntfy.recoveryDays:7}")
+	private int recoveryDays;
 	
 	@Value("${planner.ntfy.expedition-delay-hours:0}")
 	private Long expeditionDelayHours;
@@ -64,13 +63,22 @@ public class LookForLastDateTasklet implements Tasklet {
 		
 		OffsetDateTime date = govioFileProducedRepository.lastDateNotifyFile();
 		if (date == null) {
-			// L'epoch viene intesa come UTC		
-			date = OffsetDateTime.of(minLastDate, LocalTime.MIDNIGHT, ZoneOffset.UTC);
+			// Non ci sono esecuzioni, e' una nuova installazione.
+			// Imposto come ultima esecuzione ieri.
+			date = myClock.now().minusDays(1);
+			logger.warn("Data di ultima esecuzione non presente. Viene impostata al {}.", date);
 		}
-		OffsetDateTime expeditionDate = OffsetDateTime.now(zone).plusHours(expeditionDelayHours);		
+		
+		OffsetDateTime dateTreshold = myClock.now().minusDays(recoveryDays);
+		if (date.isBefore(dateTreshold)) {
+			logger.warn("Data di ultima esecuzione {} troppo remota. Viene anticipata al {}.", date, dateTreshold);
+			date = dateTreshold;
+		}
+		
+		OffsetDateTime expeditionDate = myClock.now().plusHours(expeditionDelayHours);		
 		ExecutionContext jobExecutionContext = chunkContext.getStepContext().getStepExecution().getJobExecution().getExecutionContext();
 		
-		logger.info("Data in cui è girato il batch l'ultima volta: {}",date);
+		logger.info("Data in cui è girato il batch l'ultima volta: {}", date);
 		logger.info("Expedition date: {}",expeditionDate);
 		
 		jobExecutionContext.put("date", date.toEpochSecond());
@@ -78,4 +86,5 @@ public class LookForLastDateTasklet implements Tasklet {
 		
 		return RepeatStatus.FINISHED;
 	}
+	
 }
