@@ -1,21 +1,21 @@
-/*******************************************************************************
- *  GovIO Planner - Notification system Planner for AppIO
- *  
- *  Copyright (c) 2021-2023 Link.it srl (http://www.link.it).
- *  
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 3, as published by
- *  the Free Software Foundation.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *  
- *******************************************************************************/
+/*
+ * GovHub - Application suite for Public Administration
+ *
+ * Copyright (c) 2023-2024 Link.it srl (https://www.link.it).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3, as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package it.govhub.govio.planner.api.test.costanti;
 
 import it.govhub.govregistry.commons.entity.OrganizationEntity;
@@ -92,15 +92,6 @@ public class Costanti {
 	public static final String PARAMETRO_PLAN_ID_BARI_CIE_EXP = "bari-cie-exp";
 	
 	
-	/* ORGANIZATIONS */
-	
-	public static OrganizationEntity getEnteCreditore() {
-		return OrganizationEntity.builder()
-				.taxCode(Costanti.TAX_CODE_ENTE_CREDITORE)
-				.legalName(Costanti.LEGALNAME_ENTE_CREDITORE)
-				.build();
-	}
-	/* SERVICES */
 	
 	public static ServiceEntity getServizioGenerico() {
 		return ServiceEntity.builder()
