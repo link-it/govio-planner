@@ -1,21 +1,21 @@
-/*******************************************************************************
- *  GovIO Planner - Notification system Planner for AppIO
- *  
- *  Copyright (c) 2021-2023 Link.it srl (http://www.link.it).
- *  
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License version 3, as published by
- *  the Free Software Foundation.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *  
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *  
- *******************************************************************************/
+/*
+ * GovHub - Application suite for Public Administration
+ *
+ * Copyright (c) 2023-2024 Link.it srl (https://www.link.it).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3, as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package it.govhub.govio.planner.batch.step;
 
 import java.time.Instant;
@@ -40,11 +40,6 @@ import it.govhub.govio.planner.batch.bean.CSVExpiration;
 import it.govhub.govio.planner.batch.bean.CSVItem;
 import it.govhub.govio.planner.batch.bean.MyClock;
 
-/*
- * Classe che processa gli elementi del file csv, selezionando le righe la cui data di scadenza rientra nella finestra di preavviso specificata nel file di properties.
- * Viene controllata dal preavviso più recente al più remoto. Se una entry risulta sintatticamente non valida, viene ignorata e viene loggato un messaggio di warning.
- * I formati delle date sono configurabili nelle application properties 
- */
 public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration> {
 	
 	@Value("${planner.ntfy.policy}")
@@ -96,11 +91,6 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 		return null;
 	}
 	
-	/** 
-	 * Controllo se la dueDate ricade nella finestra di notifica, ovvero
-	 * 
-	 * @return
-	 */
 	private boolean compareDates(long lastExecuted, long dueDate, int days) {
 		long nowTimestamp = myClock.now().toEpochSecond();
 		logger.trace("lastExecuted: {}, nowTimestamp: {}, dueDate: {}", ZonedDateTime.ofInstant(Instant.ofEpochSecond(lastExecuted),zone), ZonedDateTime.ofInstant(Instant.ofEpochSecond(nowTimestamp),zone),ZonedDateTime.ofInstant(Instant.ofEpochSecond(dueDate),zone));

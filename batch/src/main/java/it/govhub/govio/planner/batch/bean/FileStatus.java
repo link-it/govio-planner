@@ -1,4 +1,22 @@
 /*
+ * GovHub - Application suite for Public Administration
+ *
+ * Copyright (c) 2023-2024 Link.it srl (https://www.link.it).
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3, as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+/*
  * GovIO API
  * # Warning **This is an experimental API that is (most probably) going to change as we evolve the IO platform.** # Introduction This is the documentation of the GovIO API for 3rd party services. This API enables Public Administration services to send messages directly to citiziens through the  IO platform in a simple and templatized way.    
  *
