@@ -33,6 +33,12 @@ import org.springframework.beans.factory.annotation.Value;
 
 import it.govhub.govio.planner.batch.bean.MyClock;
 import it.govhub.govio.planner.batch.repository.GovioFileProducedRepository;
+/*
+ * 
+ * Tasklet che ha il compito di individuare nel database la data in cui è girato l'ultima volta il batch e di calcolare la data di spedizione dei messaggi di notifica.
+ * Se non c'è una iterazione precedente del batch, viene presa la data dal file di properties.
+ * 
+ */
 public class LookForLastDateTasklet implements Tasklet {
 	
 	@Autowired

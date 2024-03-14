@@ -36,6 +36,12 @@ import it.govhub.govio.planner.batch.entity.ExpirationCIEFileEntity;
 import it.govhub.govio.planner.batch.repository.ExpirationCIEFileRepository;
 import it.govhub.govio.planner.batch.exception.ExpeditionDateFileNotExists;
 
+/*
+ * 
+ * Tasklet che ha il compito di individuare il file delle scadenze.
+ * 
+ * 
+ */
 public class LookForFileTasklet implements Tasklet {
 	@Autowired
 	ExpirationCIEFileRepository expirationCIEFileRepository;

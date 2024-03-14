@@ -42,6 +42,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Rappresenta un CSV di messaggi da inviare a GovIO.
+ * 
+ * Viene prodotto da un batch dopo una lettura dell'ultimo file di scadenze caricato. 
+ *
+ */
 @Data
 @Builder
 @AllArgsConstructor
