@@ -24,6 +24,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import it.govhub.security.config.GovhubSecurityConfig;
 
 
+/**
+ * Configurazione della sicurezza
+ * 
+ */
 
 @Configuration
 @EnableWebSecurity

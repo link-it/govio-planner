@@ -92,6 +92,15 @@ public class Costanti {
 	public static final String PARAMETRO_PLAN_ID_BARI_CIE_EXP = "bari-cie-exp";
 	
 	
+	/* ORGANIZATIONS */
+	
+	public static OrganizationEntity getEnteCreditore() {
+		return OrganizationEntity.builder()
+				.taxCode(Costanti.TAX_CODE_ENTE_CREDITORE)
+				.legalName(Costanti.LEGALNAME_ENTE_CREDITORE)
+				.build();
+	}
+	/* SERVICES */
 	
 	public static ServiceEntity getServizioGenerico() {
 		return ServiceEntity.builder()

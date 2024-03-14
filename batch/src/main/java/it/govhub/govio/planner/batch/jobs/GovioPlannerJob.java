@@ -121,6 +121,11 @@ public class GovioPlannerJob {
 			});
 		}
 	}
+	/*
+	 * 
+	 * Scrittura del file csv contenente le nuove notifiche
+	 * 	
+	 */
 	// listener con getWriteCount
 	@Bean
 	@StepScope

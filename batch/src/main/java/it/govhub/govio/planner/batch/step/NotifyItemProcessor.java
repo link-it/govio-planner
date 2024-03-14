@@ -40,6 +40,11 @@ import it.govhub.govio.planner.batch.bean.CSVExpiration;
 import it.govhub.govio.planner.batch.bean.CSVItem;
 import it.govhub.govio.planner.batch.bean.MyClock;
 
+/*
+ * Classe che processa gli elementi del file csv, selezionando le righe la cui data di scadenza rientra nella finestra di preavviso specificata nel file di properties.
+ * Viene controllata dal preavviso più recente al più remoto. Se una entry risulta sintatticamente non valida, viene ignorata e viene loggato un messaggio di warning.
+ * I formati delle date sono configurabili nelle application properties 
+ */
 public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration> {
 	
 	@Value("${planner.ntfy.policy}")
@@ -91,6 +96,11 @@ public class NotifyItemProcessor implements ItemProcessor<CSVItem, CSVExpiration
 		return null;
 	}
 	
+	/** 
+	 * Controllo se la dueDate ricade nella finestra di notifica, ovvero
+	 * 
+	 * @return
+	 */
 	private boolean compareDates(long lastExecuted, long dueDate, int days) {
 		long nowTimestamp = myClock.now().toEpochSecond();
 		logger.trace("lastExecuted: {}, nowTimestamp: {}, dueDate: {}", ZonedDateTime.ofInstant(Instant.ofEpochSecond(lastExecuted),zone), ZonedDateTime.ofInstant(Instant.ofEpochSecond(nowTimestamp),zone),ZonedDateTime.ofInstant(Instant.ofEpochSecond(dueDate),zone));

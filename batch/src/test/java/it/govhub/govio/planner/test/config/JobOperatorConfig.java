@@ -30,6 +30,9 @@ public class JobOperatorConfig {
 	@Autowired
 	JobRegistry jobRegistry;
 
+	/**
+	 * Definire questo bean fa si che il jobOperator venga a conoscenza delle JobInstance esistenti e possa riavviarle.
+	 */
 	@Bean
 	public JobRegistryBeanPostProcessor jobRegistryBeanPostProcessor() {
 		JobRegistryBeanPostProcessor postProcessor = new JobRegistryBeanPostProcessor();

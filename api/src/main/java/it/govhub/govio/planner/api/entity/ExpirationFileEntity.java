@@ -46,6 +46,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Riferisce Un file CSV contente le scadenze delle carte di identità.
+ *
+ */
 
 @Data
 @Builder
